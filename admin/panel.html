@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="indexStyle.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/jquery.js"></script>
+
+    <script>
+
+
+        session();
+        function session(){
+            $.ajax({
+                type: 'GET',
+                url: 'php/adminSession.php',
+                success: function(response){
+                    if(response == 'index.html'){
+                        window.location.replace(response)
+                    }
+                }
+            })
+        }
+
+        $(document).ready(function(){
+            var createUserEmail = $('#create-user-email');
+            var createUserButton = $('#create-user-btn');
+            var usersTable = $('#users-table');
+            var createUserName = $('#create-user-name');
+            var userSection = $('#users-section');
+            var forumSection = $('#forum-section');
+            var navUsers = $('#nav-users');
+            var navForums = $('#nav-forums');
+            var createPostBtn = $('#create-post-btn');
+            var createTopicTitle = $('#create-topic-title');
+            var createTopicDescription = $('#create-topic-description');
+            var postsList = $('#posts');
+
+
+
+
+
+
+            createPost();
+            createUser();
+            getAllUsers();
+            selectNavMenus();
+
+            userSection.show();
+            forumSection.hide();
+            navUsers.addClass('active');
+            navForums.removeClass('active');
+
+
+
+            function createPost(){
+                createTopicTitle.on('keydown', function(){
+                    $(this).removeClass('is-invalid');
+                })
+                createTopicDescription.on('keydown', function(){
+                    $(this).removeClass('is-invalid');
+                })
+                createPostBtn.on('click', function(){
+                    if(createTopicDescription.val() == ""){
+                        createTopicDescription.addClass('is-invalid');
+                    }else if(createTopicTitle.val() == ""){
+                        createTopicTitle.addClass('is-invalid');
+                    }else{
+                        $.ajax({
+                            type: 'POST',
+                            url: 'php/createTopic.php',
+                            data: {
+                                title: createTopicTitle.val(),
+                                description: createTopicDescription.val()
+                            },
+                            success: function(response){
+                                var data = JSON.parse(response);
+                                postsList.append(`<div class="card col-md-6 mx-auto mt-5">
+                                                    <div class="card-body">
+                                                        <div class="d-flex">
+                                                            <img src="images/071312_pidol4.webp" class="img-fluid" style="height:50px;width:50px;border-radius:100%">
+                                                            <div class="ms-3">
+                                                                <p class="lh-sm"><span class="fw-bold fs-4">${data.name}</span></span><br>${data.date}</p>
+                                                            </div>
+                                                        </div>
+                                                        <p class="fs-2">${data.description}</p>
+                                                    </div>
+                                                </div>`);
+                            }
+                        })
+                    }
+                })
+            }
+            
+            function selectNavMenus(){
+                navUsers.on('click', function(){
+                    userSection.show();
+                    forumSection.hide();
+                    navUsers.addClass('active');
+                    navForums.removeClass('active');
+                })
+                navForums.on('click', function(){
+                    forumSection.show();
+                    userSection.hide();
+                    navForums.addClass('active');
+                    navUsers.removeClass('active');
+                })
+            }
+            function getAllUsers(){
+                $.ajax({
+                    type: 'GET',
+                    url: 'php/getAllUsers.php',
+                    success: function(response){
+                        var data = JSON.parse(response);
+                        $(data).each(function(index, value){
+                            usersTable.append(`<tr>
+                                                    <td>${value.name}</td>
+                                                    <td>${value.email}</td>
+                                                </tr>`);
+                        })
+                    }
+                })
+            }
+            function createUser(){
+                createUserEmail.on('keydown', function(){
+                    createUserEmail.removeClass('is-invalid');
+                })
+
+                createUserName.on('keydown', function(){
+                    createUserName.removeClass('is-invalid');
+                })
+
+                createUserButton.on('click', function(){
+                    if(createUserEmail.val() == ""){
+                        createUserEmail.addClass('is-invalid');
+                    }else if(createUserName.val() == ""){
+                        createUserName.addClass('is-invalid');
+                    }else{
+                        createUserEmail.removeClass('is-invalid');
+                        $.ajax({
+                            type: 'POST',
+                            url: 'php/createUser.php',
+                            data: {
+                                email: createUserEmail.val(),
+                                name: createUserName.val()
+                            },
+                            success: function(response){
+                                if(response != 'email exists'){
+                                    createUserEmail.val('');
+                                    createUserName.val('');
+                                    var data = JSON.parse(response);
+                                    $(data).each(function(index, value){
+                                        usersTable.append(`<tr>
+                                                            <td>${value.name}</td>
+                                                            <td>${value.email}</td>
+                                                        </tr>`);
+                                        alert('New user has been successfully added.');
+                                    })
+                                }else{
+                                    alert('Email already exists');
+                                }
+                            }
+                        })
+                    }
+                })
+            }
+        });
+    </script>
+    <title>Document</title>
+</head>
+<body class="bg-light">
+    <!-- navbar -->
+    <nav class="navbar navbar-expand-lg bg-success navbar-dark">
+        <div class="container">
+            <div class="navbar-brand">
+                <h3>TAU Official Logo</h3>
+            </div>
+            <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navmenu">
+                <span class="navbar-toggler-icon">
+
+                </span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navmenu">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a id="nav-users"href="#" class="nav-link fw-bold active">
+                            User Accounts
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a id="nav-forums" href="#" class="nav-link fw-bold">
+                            Forum
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <div class="dropdown">
+                            <a href="#" class="nav-link fw-bold dropdown-toggle" data-bs-toggle="dropdown">
+                                Account
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a href="#" class="dropdown-item">Logout</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- End of nav bar -->
+    
+
+    <!-- Users Section -->
+    <section id="users-section">
+        <div class="container">
+            <div class="card mt-5">
+                <div class="card-header">
+                    <h3 class="fw-bold">
+                        Create User
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <input id="create-user-email" type="text" class="form-control" placeholder="Email">
+                    <div class="invalid-feedback">
+                        Please fillout this field.
+                    </div>
+                    <input id="create-user-name" type="text" class="form-control mt-3" placeholder="Name">
+                    <div class="invalid-feedback">
+                        Please fillout this field.
+                    </div>
+                    <button id="create-user-btn" class="btn btn-success rounded-pill mt-3 px-5">
+                        Create User
+                    </button>
+                </div>
+            </div>
+            <div class="card mt-5">
+                <div class="card-header">
+                    <h3 class="fw-bold">
+                        Users
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <th scope="col">Name</th>
+                                <th scope="col">Email</th>
+                            </thead>
+                            <tbody id="users-table">
+    
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Forums Section -->
+    <section id="forum-section">
+        <div class="container">
+            <div class="col-lg-6 mx-auto card mt-5">
+                <div class="card-header">
+                    <h3 class="fw-bold">
+                        Post a Topic
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <input id="create-topic-title" type="text" class="form-control" placeholder="Topic Title">
+                    <div class="invalid-feedback">
+                        Please fillout this field.
+                    </div>
+                    <textarea id="create-topic-description" class="form-control mt-3" placeholder="Topic Description"></textarea>
+                    <div class="invalid-feedback">
+                        Please fillout this field.
+                    </div>
+                    <button id="create-post-btn" class="btn btn-success rounded-pill mt-3 px-5">
+                        Post
+                    </button>
+                </div>
+            </div>
+            <div id="posts">
+
+            </div>
+            
+        </div>
+    </section>
+</body>
+</html>
