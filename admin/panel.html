@@ -11,6 +11,7 @@
 
     <script>
 
+        
 
         session();
         function session(){
@@ -38,7 +39,11 @@
             var createTopicTitle = $('#create-topic-title');
             var createTopicDescription = $('#create-topic-description');
             var postsList = $('#posts');
+            var globalPostId = 0;
+            var userType = $('#create-user-type');
 
+            
+            
 
 
 
@@ -49,13 +54,128 @@
             getAllUsers();
             selectNavMenus();
 
+            
+
             userSection.show();
             forumSection.hide();
             navUsers.addClass('active');
             navForums.removeClass('active');
 
 
+            
 
+            function getPostComments(postId, commentList, postIndex){
+                $.ajax({
+                    type: 'POST',
+                    url: 'php/getPostAlongWithComments.php',
+                    data: {
+                        post_id: postId
+                    },
+                    success: function(response){
+                        console.log(postIndex);
+                        var data = JSON.parse(response);
+                        $(data).each(function(index, value){
+                            commentList.eq(postIndex).append(`<div class="card mt-2">
+                                                    <div class="card-body">
+                                                        <p class="fs-5">${value.comment}</p>
+                                                    </div>
+                                                </div>`)
+                        })
+                    }
+                })
+            }
+
+            function getAllPosts(){
+                $.ajax({
+                    type: 'GET',
+                    url: 'php/getAllPosts.php',
+                    success: function(response){
+                        if(response == 'index.html'){
+                            window.location.replace(response);
+                        }else{
+                            var data = JSON.parse(response);
+                            $(data).each(function(index, value){
+                                postsList.append(`<div class="post card col-md-6 mx-auto mt-1">
+                                                        <div class="card-body">
+                                                            <div class="d-flex">
+                                                                <img src="images/071312_pidol4.webp" class="img-fluid" style="height:50px;width:50px;border-radius:100%">
+                                                                <div class="ms-3">
+                                                                    <p class="lh-sm"><span class="fw-bold fs-4">${value.name}</span></span><br>${value.date}</p>
+                                                                </div>
+                                                                <button value="${value.post_id}" class="delete-post btn btn-outline-success ms-auto my-2">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                                                        <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
+                                                            <p class="fs-2">${value.description}</p>
+                                                        </div>
+                                                        <div class="card-footer">
+                                                            <h5 class="fw-bold">Comments</h5>
+                                                            <div class="comment-list">
+
+                                                            </div>
+                                                        </div>
+                                                    </div>`);
+                                var commentList = $('.comment-list');
+                                getPostComments(value.post_id, commentList, index);
+                                
+                                
+                            })
+
+                            const postObserver = new IntersectionObserver(entries => {
+                                entries.forEach(entry =>{
+                                    if(entry.isIntersecting){
+                                        entry.target.classList.add('ease-in');
+                                        return;
+                                    }
+                                    entry.target.classList.remove('ease-in');
+                                })
+                            })
+
+                            document.querySelectorAll('.post').forEach(function callback(value, index){
+                                postObserver.observe(document.querySelectorAll('.post')[index]);
+                            })
+                                
+                            
+                            
+
+                            
+                            
+                            
+            
+                            
+                            var deletePostButton = $('.delete-post');
+                            deletePostButton.on('click', function(){
+                                var thisDelete = $(this);
+                                deletePost(thisDelete);
+                            })
+                        }
+                        
+                    }
+                })
+            }
+
+
+
+            function deletePost(deleteButton){
+                $.ajax({
+                    type: 'POST',
+                    url: 'php/deletePost.php',
+                    data:{
+                        post_id: deleteButton.val()
+                    },
+                    success: function(response){
+                        if(response == 'index.html'){
+                            window.location.replace(response);
+                        }else{
+                            deleteButton.parent().parent().parent().remove();
+                            alert('Post has been removed.');
+                        }
+                        
+                    }
+                })
+            }
             function createPost(){
                 createTopicTitle.on('keydown', function(){
                     $(this).removeClass('is-invalid');
@@ -77,18 +197,30 @@
                                 description: createTopicDescription.val()
                             },
                             success: function(response){
+                                createTopicTitle.val('');
+                                createTopicDescription.val('');
                                 var data = JSON.parse(response);
-                                postsList.append(`<div class="card col-md-6 mx-auto mt-5">
-                                                    <div class="card-body">
-                                                        <div class="d-flex">
-                                                            <img src="images/071312_pidol4.webp" class="img-fluid" style="height:50px;width:50px;border-radius:100%">
-                                                            <div class="ms-3">
-                                                                <p class="lh-sm"><span class="fw-bold fs-4">${data.name}</span></span><br>${data.date}</p>
+                                postsList.prepend(`<div class="card col-md-6 mx-auto mt-1">
+                                                        <div class="card-body">
+                                                            <div class="d-flex">
+                                                                <img src="images/071312_pidol4.webp" class="img-fluid" style="height:50px;width:50px;border-radius:100%">
+                                                                <div class="ms-3">
+                                                                    <p class="lh-sm"><span class="fw-bold fs-4">${data.name}</span></span><br>${data.date}</p>
+                                                                </div>
+                                                                <button value="${data.post_id}" class="delete-post btn btn-outline-success ms-auto my-2">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                                                        <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                                                                    </svg>
+                                                                </button>
                                                             </div>
+                                                            <p class="fs-2">${data.description}</p>
                                                         </div>
-                                                        <p class="fs-2">${data.description}</p>
-                                                    </div>
-                                                </div>`);
+                                                    </div>`);
+                                var deletePostButton = $('.delete-post');
+                                deletePostButton.on('click', function(){
+                                    var thisDelete = $(this);
+                                    deletePost(thisDelete);
+                                })
                             }
                         })
                     }
@@ -104,9 +236,12 @@
                 })
                 navForums.on('click', function(){
                     forumSection.show();
+                    postsList.children().remove();
+                    getAllPosts();
                     userSection.hide();
                     navForums.addClass('active');
                     navUsers.removeClass('active');
+                    
                 })
             }
             function getAllUsers(){
@@ -145,7 +280,8 @@
                             url: 'php/createUser.php',
                             data: {
                                 email: createUserEmail.val(),
-                                name: createUserName.val()
+                                name: createUserName.val(),
+                                user_type: userType.val()
                             },
                             success: function(response){
                                 if(response != 'email exists'){
@@ -220,7 +356,7 @@
     <!-- Users Section -->
     <section id="users-section">
         <div class="container">
-            <div class="card mt-5">
+            <div class="card col-md-5 mx-auto mt-5">
                 <div class="card-header">
                     <h3 class="fw-bold">
                         Create User
@@ -232,6 +368,10 @@
                         Please fillout this field.
                     </div>
                     <input id="create-user-name" type="text" class="form-control mt-3" placeholder="Name">
+                    <div class="invalid-feedback">
+                        Please fillout this field.
+                    </div>
+                    <input id="create-user-type" type="text" class="form-control mt-3" placeholder="User Type">
                     <div class="invalid-feedback">
                         Please fillout this field.
                     </div>
@@ -285,7 +425,7 @@
                     </button>
                 </div>
             </div>
-            <div id="posts">
+            <div id="posts" class="mt-5">
 
             </div>
             

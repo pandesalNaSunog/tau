@@ -7,6 +7,7 @@
     if(isset($_POST)){
         $email = $_POST['email'];
         $name = $_POST['name'];
+        $userType = $_POST['user_type'];
         //check if email already exists
         $query = "SELECT * FROM users WHERE email = '$email'";
         $user = $con->query($query) or die($con->error);
@@ -19,7 +20,7 @@
             echo 'email exists';
         }else{
             $password = password_hash('password', PASSWORD_DEFAULT);
-            $query = "INSERT INTO users(`name`,`email`,`password`,`created_at`,`updated_at`)VALUES('$name','$email','$password','$date','$date')";
+            $query = "INSERT INTO users(`name`,`email`,`user_type`,`password`,`created_at`,`updated_at`)VALUES('$name','$email','$userType','$password','$date','$date')";
             $con->query($query) or die($con->error);
             $query = "SELECT * FROM users WHERE id = LAST_INSERT_ID()";
             $user = $con->query($query) or die($con->error);

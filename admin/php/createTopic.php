@@ -16,6 +16,11 @@
 
         $query = "SELECT * FROM users WHERE id = '$userId'";
         $user = $con->query($query) or die($con->error);
+
+        $query = "SELECT * FROM posts WHERE id = LAST_INSERT_ID()";
+        $post = $con->query($query) or die($con->error);
+        $postRow = $post->fetch_assoc();
+
         $data = $user->fetch_assoc();
         $name = $data['name'];
 
@@ -26,7 +31,8 @@
             'title' => $title,
             'description' => $description,
             'name' => $name,
-            'date' => $formattedDate
+            'date' => $formattedDate,
+            'post_id' => $postRow['id']
         ));
     }
 ?>
