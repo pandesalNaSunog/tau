@@ -18,6 +18,22 @@
     border-color: grey;
     border-style: solid;
 }
+#logo{
+    display: none;
 
+}
+
+@media (min-width: 992px){
+    
+    #logo{
+        display: block;
+        margin-left: 180px;
+        transition-duration: .4s;
+        transition-timing-function: ease-out;
+    }
+    #logo:hover{
+        margin-left: 160px;
+    }
+}
 
 
