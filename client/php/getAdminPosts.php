@@ -25,29 +25,30 @@
 
             $postId = $postItem['id'];
 
-
+            $comments = array();
             //get latest comment
             $query = "SELECT * FROM comments WHERE post_id = '$postId' ORDER BY created_at DESC LIMIT 1";
             $comment = $con->query($query) or die($con->error);
-            $commentRow = $comment->fetch_assoc();
-            $commentComment = $commentRow['comment'];
-
-            //get name
-            $commentUserId = $commentRow['user_id'];
-            $query = "SELECT * FROM users WHERE id = '$commentUserId'";
-            $commentUser = $con->query($query) or die($con->error);
-            $commentUserRow = $commentUser->fetch_assoc();
-            $commentUserName = $commentUserRow['name'];
+            while($commentRow = $comment->fetch_assoc()){
+                $commentComment = $commentRow['comment'];
+                $commentUserId = $commentRow['user_id'];
+                $query = "SELECT * FROM users WHERE id = '$commentUserId'";
+                $commentUser = $con->query($query) or die($con->error);
+                $commentUserRow = $commentUser->fetch_assoc();
+                $commentUserName = $commentUserRow['name'];
+                $comments[] = array(
+                    'name' => $commentUserName,
+                    'comment' => $commentComment
+                );
+            }
             $response[] = array(
                 'name' => $name,
                 'date' => $date,
                 'description' => $description,
                 'post_id' => $postId,
-                'latest_comment' => array(
-                    'name' => $commentUserName,
-                    'comment' => $commentComment,
-                )
+                'comments' => $comments
             );
+            
         }
         echo json_encode($response);
     }
