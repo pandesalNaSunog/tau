@@ -1,0 +1,23 @@
+.nav-active-link{
+    border-radius: 10px;
+    border-width: 1px;
+    border-color: black;
+    border-style: solid;
+    
+}
+
+#header{
+    padding-top: 10%;
+    padding-bottom: 10%;
+    background-color: bisque;
+}
+
+.nav-link:hover{
+    border-radius: 10px;
+    border-width: 1px;
+    border-color: grey;
+    border-style: solid;
+}
+
+
+

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="style.css">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="js/jquery.js"></script>
+        <script>
+            $(document).ready(function(){
+                var navLink = $('.nav-link');
+
+                navLink.on('click', function(){
+                    navLink.removeClass('nav-active-link');
+                    $(this).addClass('nav-active-link');
+                })
+            })
+        </script>
+        <title>TAU Connect</title>
+    </head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light shadow">
+        <div class="container">
+            <div class="navbar brand">
+                
+                <img src="admin/images/tau logo.png" class="img-fluid rounded-circle shadow" style="width:70px; height: 70px;" alt="">
+                <h3 class="fw-bold ms-3">
+                    TAU Connect
+                </h3>
+            </div>
+
+            <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav-menu">
+                <span class="navbar-toggler-icon">
+
+                </span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="nav-menu">
+                <ul class="navbar-nav ms-auto fw-bold">
+                    <li class="nav-item mx-2">
+                        <a href="#" class="nav-link px-4 nav-active-link">Home</a>
+                    </li>
+                    <li class="nav-item mx-2">
+                        <a href="#" class="nav-link px-4">Features</a>
+                    </li>
+                </ul>
+            </div>
+            
+        </div>
+    </nav>
+
+
+
+    <section id="home-section">
+        <div id="header">
+            <div class="container">
+                <div class="d-lg-flex justify-content-evenly align-items-center">
+                    <div class="col-lg-5" id="header-texts">
+                        <h1 class="fw-bold" style="font-size:50px">Lorem ipsum dolor sit amet.</h1>
+                        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Facere distinctio a delectus eum fuga, nemo autem ipsam exercitationem consequatur quas debitis nulla dolor excepturi ad harum explicabo possimus aut nostrum tenetur eveniet deleniti nisi odit vitae laboriosam. Omnis excepturi, obcaecati consectetur tempora debitis harum placeat quo porro repudiandae quis repellat.</p>
+                        <a href="client" class="shadow btn btn-success fw-bold px-5 rounded-pill">LOG IN NOW</a>
+                    </div>
+                    <div class="col-lg-5 text-center">
+                        <img src="admin/images/tau logo.png" style="width: 300px; height: 300px" alt="">
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </section>
+
+    <section id="features-section">
+        <div class="container">
+            
+        </div>
+    </section>
+
+</body>
+</html>
