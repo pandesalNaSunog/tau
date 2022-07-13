@@ -9,8 +9,15 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../js/jquery.js"></script>
     <script>
-        $(document).ready(function(){
 
+        $(document).ready(function(){
+            var imageUpload = $('#image-upload');
+            var confirmImageUpload = $('#confirm-image-upload');
+            var profilePicture = $('#profile-picture');
+            var profileEmail = $('#profile-email');
+            var profileName = $('#profile-name');
+            var profileSection = $('#profile-section');
+            var profileLink = $('#profile-link');
             var forumSection = $('#forum-section');
             var announcementLink = $('#announcement-link');
             var logout = $('#logout');
@@ -25,6 +32,7 @@
             })
 
             homeLink.on('click', function(){
+                profileSection.hide();
                 announcmentSection.hide();
                 forumSection.show();
                 posts.children().remove();
@@ -32,19 +40,70 @@
             });
 
             announcementLink.on('click', function(){
+                profileSection.hide();
                 announcmentSection.show();
                 announcementTable.children().remove();
                 forumSection.hide();
                 getAnnouncementsFunc();
             })
 
+            profileLink.on('click', function(){
+                profileSection.show();
+                announcmentSection.hide();
+                forumSection.hide();
+                getProfileFunc();
+            })
 
+            announcmentSection.hide();
+            profileSection.hide();
             session();
             logoutFunc();
             getPostsFunc();
 
+            confirmImageUpload.on('click', function(){
+                if(imageUpload.val() == ""){
+                    alert('Please choose an image file.');
+                }else{
+                    changeProfilePicture();
+                }
+            })
+            function changeProfilePicture(){
+                var formData = new FormData();
+                formData.append("image", imageUpload[0].files[0]);
+                $.ajax({
+                    type: 'POST',
+                    url: 'php/uploadProfilePicture.php',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response){
+                        if(response == 'invalid'){
+                            alert('Invalid file. Please upload image files only.');
+                        }else{
+                            profilePicture.attr("src",response);
+                        }
+                    }
+                })
+            }
+            function getProfileFunc(){
+                $.ajax({
+                    type: 'GET',
+                    url: 'php/getMyProfile.php',
+                    success: function(response){
+                        if(response != 'index.html'){
+                            var data = JSON.parse(response);
+                            profileName.text(data.name);
+                            profileEmail.text(data.email);
 
-
+                            if(data.profile_picture != null){
+                                profilePicture.attr("src",data.profile_picture);
+                            }
+                        }else{
+                            window.location.replace(response);
+                        }
+                    }
+                })
+            }
             function getAnnouncementsFunc(){
                 $.ajax({
                     type: 'GET',
@@ -187,7 +246,7 @@
                           </svg><span class="ms-2">Home</span></a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="navigation-link nav-link px-3 mx-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                        <a id="profile-link" href="#" class="navigation-link nav-link px-3 mx-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
                             <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
                             <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
                           </svg><span class="ms-2">My Profile</span></a>
@@ -241,6 +300,46 @@
             </div>
         </div>
     </section>
+
+    <section id="profile-section">
+        <div class="container">
+            <div class="mx-auto col-lg-7 card mt-5 shadow rounded-4">
+                <div class="card-body text-center">
+
+                    <div style="width:200px; height:200px" class="mx-auto position-relative rounded-circle mt-5 border border-success border-3">
+                        <img id="profile-picture" src="images/blank.png" alt="" class="rounded-circle img-fluid">
+                        <button class="position-absolute top-0 start-100 translate-middle badge rounded-pill btn btn-success" data-bs-toggle="modal" data-bs-target="#upload-profile-picture-modal"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                          </svg></button>
+                    </div>
+                    
+                    <h1 id="profile-name" class="fw-bold mt-5">
+                        
+                    </h1>
+                    <p><em id="profile-email"></em></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <div class="modal fade" id="upload-profile-picture-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="fw-bold">
+                        Upload Photo
+                    </h3>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input id="image-upload" type="file" class="form-control">
+                    <button id="confirm-image-upload" class="btn btn-success mt-3" style="width: 100%">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
     
 </body>
 </html>
