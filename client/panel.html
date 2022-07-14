@@ -12,6 +12,7 @@
 
         $(document).ready(function(){
             var globalUserId = 0;
+            var noPosts = $('#no-posts');
             var complaintsTable = $('#complaints-table');
             var receiverName = $('#receiver-name');
             var messageList = $('#message-list');
@@ -345,10 +346,10 @@
                     type: 'GET',
                     url: 'php/getAdminPosts.php',
                     success: function(response){
-                        console.log(response);
                         if(response != 'index.html'){
                             var data = JSON.parse(response);
                             $(data).each(function(index, value){
+                                noPosts.hide();
                                 posts.append(`<div class="col-lg-6 mx-auto card mt-5 shadow rounded-3">
                                     <div class="card-body">
                                         <div class="d-flex">
