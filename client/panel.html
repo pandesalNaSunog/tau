@@ -283,6 +283,7 @@
 
 
             function getProfileFunc(name, email, usertype){
+                complaintsTable.children().remove();
                 $.ajax({
                     type: 'GET',
                     url: 'php/getMyProfile.php',
