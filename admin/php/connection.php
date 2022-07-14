@@ -1,9 +1,14 @@
 <?php
     function connect(){
+        // $hostname = "localhost";
+        // $username = "root";
+        // $password = "";
+        // $database = "tau_db";
+
         $hostname = "localhost";
-        $username = "root";
-        $password = "";
-        $database = "tau_db";
+        $username = "u568496919_tau";
+        $password = "Tauconnect11";
+        $database = "u568496919_tau_db";
 
         $con = new mysqli($hostname, $username, $password, $database);
 

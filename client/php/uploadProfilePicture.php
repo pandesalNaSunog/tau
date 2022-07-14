@@ -14,10 +14,10 @@
         $allowedExtensions = array('jpg','jpeg','png');
         $filePath = "";
         if(in_array($fileExtension, $allowedExtensions)){
-            $filePath = "../images/".uniqid().".".$fileExtension;
+            $filePath = "../../tauApi/public/".uniqid().".".$fileExtension;
             move_uploaded_file($tmpName,$filePath);
 
-            $filePath = str_replace("../","",$filePath);
+            $filePath = str_replace("../../tauApi/","",$filePath);
 
             $query = "UPDATE users SET profile_picture = '$filePath' WHERE id = '$userId'";
             $con->query($query) or die($con->error);
