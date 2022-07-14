@@ -42,7 +42,8 @@
                                 },
                                 success: function(response){
                                     if(response == 'invalid'){
-                                        alert('Invalid Email and Password');
+                                        $('#email-invalid-feedback').text('Invalid Email and Password');
+                                        email.addClass('is-invalid')
                                     }else{
                                         window.location.replace(response);
                                     }
