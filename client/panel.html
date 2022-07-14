@@ -56,6 +56,7 @@
             editProfileModalTrigger.on('click', function(){
                 getProfileToEditFunc(updateName,updateEmail);
             })
+            getPostsFunc();
 
             homeLink.on('click', function(){
                 messagesSection.hide();
@@ -96,7 +97,7 @@
             messagesSection.hide();
             session();
             logoutFunc();
-            getPostsFunc();
+            
 
             confirmImageUpload.on('click', function(){
                 if(imageUpload.val() == ""){
