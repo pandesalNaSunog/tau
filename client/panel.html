@@ -347,6 +347,7 @@
                     type: 'GET',
                     url: 'php/getAdminPosts.php',
                     success: function(response){
+                        console.log(response);
                         if(response != 'index.html'){
                             var data = JSON.parse(response);
                             $(data).each(function(index, value){
