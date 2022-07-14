@@ -411,19 +411,20 @@
                                             post_id: thisWriteCommentBtn.val()
                                         },
                                         success: function(response){
-                                            if(response != 'index.html'){
-                                                thisWriteComment.val('');
+                                            // if(response != 'index.html'){
+                                            //     thisWriteComment.val('');
 
-                                                var data = JSON.parse(response);
-                                                thisCommentList.append(`<div class="card mt-2">
-                                                                            <div class="card-body">
-                                                                                <p class="lh-sm">
-                                                                                    <span class="fw-bold">${data.name}</span><br>
-                                                                                    <span class="fs-6">${data.comment}</span>
-                                                                                </p>
-                                                                            </div>
-                                                                        </div>`)
-                                            }
+                                            //     var data = JSON.parse(response);
+                                            //     thisCommentList.append(`<div class="card mt-2">
+                                            //                                 <div class="card-body">
+                                            //                                     <p class="lh-sm">
+                                            //                                         <span class="fw-bold">${data.name}</span><br>
+                                            //                                         <span class="fs-6">${data.comment}</span>
+                                            //                                     </p>
+                                            //                                 </div>
+                                            //                             </div>`)
+                                            // }
+                                            console.log(response);
                                         }
                                     })
                                 }
