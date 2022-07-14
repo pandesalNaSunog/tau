@@ -4,7 +4,7 @@
     $con = connect();
     $today = getCurrentDate();
     if(isset($_SESSION['user_id']) && isset($_POST)){
-        echo $_POST;
+        echo json_encode($_POST);
         // $userId = $_SESSION['user_id'];
         // $comment = $_POST['comment'];
         // $postId = $_POST['post_id'];
