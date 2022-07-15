@@ -100,8 +100,8 @@
 
                         var acknowledge = $('.acknowledge');
                         acknowledge.on('click', function(){
-                            var thisstatus = $(this).parent().parent().parent().parent().parent().children().eq(3).text()
-                            if(thisstatus == 'ACKNOWLEDGED'){
+                            var thisstatus = $(this).parent().parent().parent().parent().parent().children().eq(3)
+                            if(thisstatus.text() == 'ACKNOWLEDGED'){
                                 alert('This complaint has already been acknowledged.');
                             }else{ 
                                 if(confirm('Acknowledge this complaint?') == true){
