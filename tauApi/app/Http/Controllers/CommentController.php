@@ -50,17 +50,35 @@ class CommentController extends Controller
 
     public function getPosts(){
         $posts = Post::all();
-        $response = array();
-        foreach($posts as $postsItem){
-            $postId = $postsItem['id'];
-            $comments = Comment::where('post_id',$postId)->get();
+        $postArray = array();
+        $commentArray = array();
+        foreach($posts as $postItem){
+            $postId = $postItem->id;
+            $userId = $postItem->user_id;
+            $user = User::where('id', $userId)->first();
+            $name = $user->name;
+            $date = $postItem->created_at->format('M d, Y h:i A');
+            $description = $postItem->description;
 
-            $response[] = [
-                'post' => $postsItem,
-                'comments' => $comments
+            $comments = Comment::where('post_id', $postId)->get();
+            $commenterId = $comments->userId;
+            $commenter = User::where('id', $commenterId)->first();
+            $commenterName = $commenter->name;
+            $commentItself = $comments->comment;
+            $commentArray[] = [
+                'name' => $commenterName,
+                'comment' => $commentItself
+            ];
+
+            $postArray[] = [
+                'post_id' => $postId,
+                'name' => $name,
+                'date' => $date,
+                'description' => $description,
+                'comments' => $commentArray
             ];
         }
 
-        return response($response, 200);
+        return response($postArray, 200);
     }
 }
