@@ -53,7 +53,7 @@ class CommentController extends Controller
         $response = array();
         foreach($posts as $postsItem){
             $postId = $postsItem['id'];
-            $comments = Comment::where('post_id',$id)->get();
+            $comments = Comment::where('post_id',$postId)->get();
 
             $response[] = [
                 'post' => $postsItem,
