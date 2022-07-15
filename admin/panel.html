@@ -27,12 +27,16 @@
         }
 
         $(document).ready(function(){
+            var complaintId = 0;
+            var complaintsTable = $('#complaints-table');
             var createUserEmail = $('#create-user-email');
             var createUserButton = $('#create-user-btn');
             var usersTable = $('#users-table');
             var createUserName = $('#create-user-name');
             var userSection = $('#users-section');
             var forumSection = $('#forum-section');
+            var complaintsSection = $('#complaints-section');
+            var navComplaints = $('#nav-complaints');
             var navUsers = $('#nav-users');
             var navForums = $('#nav-forums');
             var createPostBtn = $('#create-post-btn');
@@ -59,11 +63,74 @@
 
             userSection.show();
             forumSection.hide();
+            complaintsSection.hide();
             navUsers.addClass('active');
             navForums.removeClass('active');
             announcmentSection.hide();
 
 
+
+            function getStudentComplaints(){
+                complaintsTable.children().remove();
+                $.ajax({
+                    type: 'GET',
+                    url: 'php/getAllComplaints.php',
+                    success: function(response){
+                        var data = JSON.parse(response);
+                        $(data).each(function(index, value){
+                            complaintsTable.append(`<tr>
+                                                        <td>${value.student_name}</td>
+                                                        <td>${value.complaint}</td>
+                                                        <td>${value.date}</td>
+                                                        <td>${value.status}</td>
+                                                        <td>
+                                                            <div class="dropdown">
+                                                                <button class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown">
+                                                                    Take Action
+                                                                </button>
+                                                                <ul class="dropdown-menu">
+                                                                    <li>
+                                                                        <button value="${value.id}" class="acknowledge dropdown-item btn btn-success">Acknowledge</button>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+                                                        </td>
+                                                    </tr>`)
+                        })
+
+                        var acknowledge = $('.acknowledge');
+                        acknowledge.on('click', function(){
+                            var thisstatus = $(this).parent().parent().parent().parent().parent().children().eq(3).text()
+                            if(thisstatus == 'ACKNOWLEDGED'){
+                                alert('This complaint has already been acknowledged.');
+                            }else{ 
+                                if(confirm('Acknowledge this complaint?') == true){
+                                    complaintId = $(this).val();
+                                    acknowledgeComplaint(complaintId, thisstatus);
+                                }
+                            }
+                            
+                        })
+                    }
+                })
+            }
+
+
+            function acknowledgeComplaint(complaintid, status){
+                $.ajax({
+                    type: 'POST',
+                    url: 'php/updateComplaintStatus.php',
+                    data:{
+                        complaint_id: complaintId
+                    },
+                    success: function(response){
+                        if(response == 'ok'){
+                            status.text('ACKNOWLEDGED');
+                        }
+                        
+                    }
+                })
+            }
 
             function logoutFunc(){
                 logout.on('click', function(){
@@ -116,7 +183,7 @@
                         console.log(postIndex);
                         var data = JSON.parse(response);
                         $(data).each(function(index, value){
-                            commentList.eq(postIndex).append(`<div class="card mt-2">
+                            commentList.eq(postIndex).append(`<div class="card shadow mt-2">
                                                                     <div class="card-body">
                                                                         <p class="lh-sm">
                                                                             <span class="fw-bold">${value.name}</span><br>
@@ -156,7 +223,7 @@
                         }else{
                             var data = JSON.parse(response);
                             $(data).each(function(index, value){
-                                postsList.append(`<div class="post card col-md-6 mx-auto mt-1">
+                                postsList.append(`<div class="post card shadow col-md-6 mx-auto mt-1">
                                                         <div class="card-body">
                                                             <div class="d-flex">
                                                                 <img src="images/071312_pidol4.webp" class="img-fluid" style="height:50px;width:50px;border-radius:100%">
@@ -274,7 +341,7 @@
                                 createTopicTitle.val('');
                                 createTopicDescription.val('');
                                 var data = JSON.parse(response);
-                                postsList.prepend(`<div class="card col-md-6 mx-auto mt-1">
+                                postsList.prepend(`<div class="card shadow col-md-6 mx-auto mt-1">
                                                         <div class="card-body">
                                                             <div class="d-flex">
                                                                 <img src="images/071312_pidol4.webp" class="img-fluid" style="height:50px;width:50px;border-radius:100%">
@@ -314,32 +381,42 @@
             }
             
             function selectNavMenus(){
+
                 navUsers.on('click', function(){
+                    $('.nav-link').removeClass('active');
+                    $(this).addClass('active');
                     userSection.show();
                     forumSection.hide();
-                    navUsers.addClass('active');
-                    navForums.removeClass('active');
-                    navAnnouncements.removeClass('active');
+                    complaintsSection.hide();
                     announcmentSection.hide();
                 })
                 navForums.on('click', function(){
+                    $('.nav-link').removeClass('active');
+                    $(this).addClass('active');
                     forumSection.show();
                     postsList.children().remove();
                     getAllPosts();
                     userSection.hide();
-                    navForums.addClass('active');
-                    navUsers.removeClass('active');
-                    navAnnouncements.removeClass('active');
                     announcmentSection.hide();
+                    complaintsSection.hide();
                 })
 
                 navAnnouncements.on('click', function(){
+                    $('.nav-link').removeClass('active');
+                    $(this).addClass('active');
                     forumSection.hide()
                     userSection.hide();
-                    navAnnouncements.addClass('active');
-                    navUsers.removeClass('active');
-                    navAnnouncements.removeClass('active');
                     announcmentSection.show();
+                    complaintsSection.hide();
+                })
+                navComplaints.on('click', function(){
+                    $('.nav-link').removeClass('active');
+                    $(this).addClass('active');
+                    forumSection.hide();
+                    userSection.hide();
+                    announcmentSection.hide();
+                    complaintsSection.show();
+                    getStudentComplaints();
                 })
             }
             function getAllUsers(){
@@ -473,7 +550,7 @@
     <nav class="navbar navbar-expand-lg bg-success navbar-dark sticky-top">
         <div class="container">
             <div class="navbar-brand d-flex">
-                <img src="images/tau logo.png" class="img-fluid shadow rounded-circle" style="height: 80px; width: 80px" alt="">
+                <img src="images/tau logo.png" class="img-fluid  rounded-circle" style="height: 80px; width: 80px" alt="">
                 <div class="lh-1 ms-3 d-flex flex-column">
                     <p class="fs-2 fw-bold">TAU Connect</p>
                     <p>Administrator</p>
@@ -504,6 +581,11 @@
                             Announcement
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a id="nav-complaints" href="#" class="nav-link fw-bold">
+                            Student Complaints
+                        </a>
+                    </li>
                     
                     <li class="nav-item">
                         <div class="dropdown">
@@ -527,7 +609,7 @@
     <!-- Users Section -->
     <section id="users-section">
         <div class="container">
-            <div class="card col-md-5 mx-auto mt-5">
+            <div class="card shadow col-md-5 mx-auto mt-5">
                 <div class="card-header">
                     <h3 class="fw-bold">
                         Create User
@@ -551,7 +633,7 @@
                     </button>
                 </div>
             </div>
-            <div class="card mt-5">
+            <div class="card shadow mt-5">
                 <div class="card-header">
                     <h3 class="fw-bold">
                         Users
@@ -577,7 +659,7 @@
     <!-- Forums Section -->
     <section id="forum-section">
         <div class="container">
-            <div class="col-lg-6 mx-auto card mt-5">
+            <div class="col-lg-6 mx-auto card shadow mt-5">
                 <div class="card-header">
                     <h3 class="fw-bold">
                         Post a Topic
@@ -609,7 +691,7 @@
 
     <section id="announcement-section">
         <div class="container">
-            <div class="mx-auto card col-md-5 mt-5">
+            <div class="mx-auto card shadow col-md-5 mt-5">
                 <div class="card-header">
                     <h5 class="fw-bold">Post an Announcement</h5>
                 </div>
@@ -636,7 +718,7 @@
                 </div>
             </div>
 
-            <div class="card mx-auto col-md-5 mt-5">
+            <div class="card shadow mx-auto col-md-5 mt-5">
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-striped">
@@ -645,6 +727,35 @@
                                 <th scope="col">Date</th>
                             </thead>
                             <tbody id="announcement-table">
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <section id="complaints-section">
+        <div class="container">
+            <div class="card shadow mt-5 mx-auto col-md-6">
+                <div class="card-header">
+                    <h3 class="fw-bold">
+                        Student Complaints
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <th scope="col">Student Name</th>
+                                <th scope="col">Complaint</th>
+                                <th scope="col">Date Submitted</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Action</th>
+                            </thead>
+                            <tbody id="complaints-table">
 
                             </tbody>
                         </table>
