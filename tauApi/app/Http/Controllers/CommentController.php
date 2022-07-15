@@ -61,14 +61,18 @@ class CommentController extends Controller
             $description = $postItem->description;
 
             $comments = Comment::where('post_id', $postId)->get();
-            $commenterId = $comments->userId;
-            $commenter = User::where('id', $commenterId)->first();
-            $commenterName = $commenter->name;
-            $commentItself = $comments->comment;
-            $commentArray[] = [
-                'name' => $commenterName,
-                'comment' => $commentItself
-            ];
+
+            foreach($comments as $commentItem){
+                $commenterId = $commentItem->userId;
+                $commenter = User::where('id', $commenterId)->first();
+                $commenterName = $commenter->name;
+                $commentItself = $commentItem->comment;
+                $commentArray[] = [
+                    'name' => $commenterName,
+                    'comment' => $commentItself
+                ];
+            }
+            
 
             $postArray[] = [
                 'post_id' => $postId,
