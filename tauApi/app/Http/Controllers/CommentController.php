@@ -63,7 +63,7 @@ class CommentController extends Controller
             $comments = Comment::where('post_id', $postId)->get();
 
             foreach($comments as $commentItem){
-                $commenterId = $commentItem->userId;
+                $commenterId = $commentItem->user_id;
                 $commenter = User::where('id', $commenterId)->first();
                 $commenterName = $commenter->name;
                 $commentItself = $commentItem->comment;
