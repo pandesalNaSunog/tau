@@ -22,7 +22,7 @@
             $date = date_create($postItem['created_at']);
             $date = date_format($date, 'M d, Y h:i A');
             $description = $postItem['description'];
-
+            $profilePicture = $userRow['profile_picture'];
             $postId = $postItem['id'];
 
             $comments = array();
@@ -42,6 +42,7 @@
                 );
             }
             $response[] = array(
+                'profile_picture' => $profilePicture,
                 'name' => $name,
                 'date' => $date,
                 'description' => $description,

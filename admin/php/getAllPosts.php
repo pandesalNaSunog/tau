@@ -22,13 +22,15 @@
             $user = $con->query($query) or die($con->error);
             $row = $user->fetch_assoc();
             $name = $row['name'];
+            $profilePicture = $row['profile_picture'];
             $date = date_create($postItem['created_at']);
             $id = $postItem['id'];
             $postsWithName[] = array(
                 'name' => $name,
                 'description' => $postItem['description'],
                 'date' => date_format($date, 'M d, Y h:i A'),
-                'post_id' => $id
+                'post_id' => $id,
+                'profile_picture' => $profilePicture
             );
         }
 
