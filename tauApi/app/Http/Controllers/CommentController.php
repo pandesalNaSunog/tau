@@ -53,10 +53,12 @@ class CommentController extends Controller
         $postArray = array();
         
         foreach($posts as $postItem){
+
             $postId = $postItem->id;
             $userId = $postItem->user_id;
             $user = User::where('id', $userId)->first();
             $name = $user->name;
+            $profilePicture = $user->profile_picture;
             $date = $postItem->created_at->format('M d, Y h:i A');
             $description = $postItem->description;
 
@@ -72,12 +74,14 @@ class CommentController extends Controller
                     'name' => $commenterName,
                     'comment' => $commentItself
                 ];
+                
             }
             
 
             $postArray[] = [
                 'post_id' => $postId,
                 'name' => $name,
+                'profile_picture' => $profilePicture,
                 'date' => $date,
                 'description' => $description,
                 'comments' => $commentArray
