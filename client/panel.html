@@ -56,6 +56,7 @@
             editProfileModalTrigger.on('click', function(){
                 getProfileToEditFunc(updateName,updateEmail);
             })
+            session();
             getPostsFunc();
 
             homeLink.on('click', function(){
@@ -95,7 +96,7 @@
             announcmentSection.hide();
             profileSection.hide();
             messagesSection.hide();
-            session();
+
             logoutFunc();
             
 
