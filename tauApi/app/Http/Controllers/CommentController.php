@@ -51,7 +51,7 @@ class CommentController extends Controller
     public function getPosts(){
         $posts = Post::all();
         $postArray = array();
-        $commentArray = array();
+        
         foreach($posts as $postItem){
             $postId = $postItem->id;
             $userId = $postItem->user_id;
@@ -60,8 +60,9 @@ class CommentController extends Controller
             $date = $postItem->created_at->format('M d, Y h:i A');
             $description = $postItem->description;
 
+            
             $comments = Comment::where('post_id', $postId)->get();
-
+            $commentArray = array();
             foreach($comments as $commentItem){
                 $commenterId = $commentItem->user_id;
                 $commenter = User::where('id', $commenterId)->first();
