@@ -49,7 +49,7 @@ class CommentController extends Controller
     }
 
     public function getPosts(){
-        $posts = Posts::all();
+        $posts = Post::all();
         $response = array();
         foreach($posts as $postsItem){
             $postId = $postsItem['id'];
