@@ -47,4 +47,20 @@ class CommentController extends Controller
             'user' => $user
         ], 200);
     }
+
+    public function getPosts(){
+        $posts = Posts::all();
+        $response = array();
+        foreach($posts as $postsItem){
+            $postId = $postsItem['id'];
+            $comments = Comment::where('post_id',$id)->get();
+
+            $response[] = [
+                'post' => $postsItem,
+                'comments' => $comments
+            ];
+        }
+
+        return response($response, 200);
+    }
 }
