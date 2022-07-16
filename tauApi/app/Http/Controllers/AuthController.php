@@ -37,4 +37,13 @@ class AuthController extends Controller
             'message' => 'logged out'
         ], 200);
     }
+
+    public function getProfile(Request $request){
+        $token = PersonalAccessToken::findToken($request->bearerToken());
+        $id = $token->tokenable->id;
+
+        $user = User::where('id', $id)->first();
+
+        return response($user, 200);
+    }
 }
