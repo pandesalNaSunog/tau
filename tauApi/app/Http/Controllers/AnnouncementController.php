@@ -9,6 +9,24 @@ class AnnouncementController extends Controller
     public function getAnnouncements(){
         $announcements = Announcement::all();
 
-        return response($announcements, 200);
+        $response = array();
+
+        foreach($announcements as $announcementsItem){
+            $id = $announcementsItem->id;
+            $title = $announcementsItem->title;
+            $description = $announcementsItem->description;
+            $createdAt = $announcementsItem->create_at->format('M d, Y h:i A');
+            $updatedAt = $announcementsItem->updated_at->format('M d, Y h:i A');
+
+            $response[] = [
+                'id' => $id,
+                'title' => $title,
+                'description' => $description,
+                'created_at' => $createdAt,
+                'updated_at' => $updatedAt
+            ];
+        }
+
+        return response($response, 200);
     }
 }
