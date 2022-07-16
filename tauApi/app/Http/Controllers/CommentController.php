@@ -64,7 +64,7 @@ class CommentController extends Controller
             $description = $postItem->description;
 
             
-            $comments = Comment::where('post_id', $postId)->get();
+            $comments = Comment::where('post_id', $postId)->orderBy('id','desc')->limit(5)->get();
             $commentArray = array();
             foreach($comments as $commentItem){
                 $commentId = $commentItem->id;
