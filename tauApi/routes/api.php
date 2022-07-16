@@ -19,5 +19,5 @@ Route::get('/posts', [CommentController::class, 'getPosts']);
 Route::group(['middleware' => ['auth:sanctum']], function(){
     Route::post('/post-comment', [CommentController::class, 'postComment']);
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::post('/my-profile', [AuthController::class, 'getProfile']);
+    Route::get('/my-profile', [AuthController::class, 'getProfile']);
 });
