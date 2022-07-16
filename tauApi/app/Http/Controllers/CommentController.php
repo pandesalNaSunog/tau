@@ -45,7 +45,7 @@ class CommentController extends Controller
         return response([
             'comment_id' => $comment->id,
             'comment' => $comment->comment,
-            'name' => $user
+            'name' => $user->name
         ], 200);
     }
 
