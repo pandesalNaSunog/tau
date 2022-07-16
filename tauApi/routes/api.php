@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/posts', [CommentController::class, 'getPosts']);
+Route::get('/announcements', [AnnouncementController::class, 'getAnnouncements']);
 Route::group(['middleware' => ['auth:sanctum']], function(){
     Route::post('/post-comment', [CommentController::class, 'postComment']);
     Route::post('/logout', [AuthController::class, 'logout']);
