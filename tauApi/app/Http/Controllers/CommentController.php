@@ -43,8 +43,9 @@ class CommentController extends Controller
         ]);
 
         return response([
-            'comment' => $comment,
-            'user' => $user
+            'comment_id' => $comment->id,
+            'comment' => $comment->comment,
+            'name' => $user
         ], 200);
     }
 
@@ -66,11 +67,13 @@ class CommentController extends Controller
             $comments = Comment::where('post_id', $postId)->get();
             $commentArray = array();
             foreach($comments as $commentItem){
+                $commentId = $commentItem->id;
                 $commenterId = $commentItem->user_id;
                 $commenter = User::where('id', $commenterId)->first();
                 $commenterName = $commenter->name;
                 $commentItself = $commentItem->comment;
                 $commentArray[] = [
+                    'comment_id' => $commentId,
                     'name' => $commenterName,
                     'comment' => $commentItself
                 ];
