@@ -15,7 +15,7 @@ class AnnouncementController extends Controller
             $id = $announcementsItem->id;
             $title = $announcementsItem->title;
             $description = $announcementsItem->description;
-            $createdAt = $announcementsItem->create_at->format('M d, Y h:i A');
+            $createdAt = $announcementsItem->created_at->format('M d, Y h:i A');
             $updatedAt = $announcementsItem->updated_at->format('M d, Y h:i A');
 
             $response[] = [
