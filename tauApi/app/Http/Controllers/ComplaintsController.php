@@ -37,4 +37,22 @@ class ComplaintsController extends Controller
 
         return response($response, 200);
     }
+
+    public function submitComplaint(Request $request){
+
+        $request->validate([
+            'complaint' => 'required'
+        ]);
+
+        $token = PersonalAccessToken::findToken($request->bearerToken());
+        $id = $token->tokenable->id;
+
+        $complaint = Complaint::create([
+            'user_id' => $id,
+            'complaint' => $request['complaint'],
+            'status' => 'PENDING'
+        ]);
+
+        return response($complaint, 200);
+    }
 }
