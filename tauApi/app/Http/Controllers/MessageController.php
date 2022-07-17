@@ -56,7 +56,7 @@ class MessageController extends Controller
         $token = PersonalAccessToken::findToken($request->bearerToken());
         $id = $token->tokenable->id;
 
-        $users = User::where('id','<>',$id)->get();
+        $users = User::where('id','<>',$id)->where('user_type','<>','admin')->get();
 
         return response($users, 200);
     }
