@@ -7,7 +7,7 @@ use App\Models\Announcement;
 class AnnouncementController extends Controller
 {
     public function getAnnouncements(){
-        $announcements = Announcement::all();
+        $announcements = Announcement::all()->orderBy('id', 'desc');
 
         $response = array();
 
