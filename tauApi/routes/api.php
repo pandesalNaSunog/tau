@@ -24,4 +24,5 @@ Route::group(['middleware' => ['auth:sanctum']], function(){
     Route::get('/my-complaints', [ComplaintsController::class, 'getMyComplaints']);
     Route::post('/submit-complaint', [ComplaintsController::class, 'submitComplaint']);
     Route::post('/conversation', [MessageController::class, 'getConversation']);
+    Route::get('/users-to-message', [MessageController::class, 'getUsers']);
 });

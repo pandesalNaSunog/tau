@@ -51,4 +51,13 @@ class MessageController extends Controller
 
         return response($response, 200);
     }
+
+    public function getUsers(Request $request){
+        $token = PersonalAccessToken::findToken($request->bearerToken());
+        $id = $token->tokenable->id;
+
+        $users = User::where('id','<>',$id)->get();
+
+        return response($users, 200);
+    }
 }
