@@ -53,6 +53,15 @@ class ComplaintsController extends Controller
             'status' => 'PENDING'
         ]);
 
-        return response($complaint, 200);
+        $response = [
+            'id' => $complaint->id,
+            'user_id' => $complaint->user_id,
+            'complaint' => $complaint->complaint,
+            'status' => $complaint->status,
+            'created_at' => $complaint->created_at->format('M d, Y h:i A'),
+            'updated_at' => $complaint->updated_at->format('M d, Y h:i A'),
+        ];
+
+        return response($response, 200);
     }
 }
