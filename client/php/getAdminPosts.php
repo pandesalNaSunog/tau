@@ -57,7 +57,7 @@
             echo json_encode($response);
         }
     }else{
-        echo header('HTTP/1.0 401 Unauthorized');
+        echo header('HTTP/1.0 403 Forbidden');
     }
     
 ?>
