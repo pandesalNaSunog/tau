@@ -10,50 +10,7 @@
         <script src="../js/jquery.js"></script>
 
         <script>
-            $(document).ready(function(){
-                var email = $('#email');
-                var password = $('#password');
-                var loginBtn = $('#login-btn');
-
-                loginFunc();
-
-                function loginFunc(){
-                    email.on('keydown', function(){
-                        email.removeClass('is-invalid');
-                    })
-                    password.on('keydown', function(){
-                        password.removeClass('is-invalid');
-                    })
-
-                    loginBtn.on('click', function(){
-                        if(email.val() == ""){
-                            $('#email-invalid-feedback').text('Please fill out this field.');
-                            email.addClass('is-invalid');
-                        }else if(password.val() ==""){
-                            $('#password-invalid-feedback').text('Please fill out this field');
-                            password.addClass('is-invalid');
-                        }else{
-                            $.ajax({
-                                type: 'POST',
-                                url: 'php/login.php',
-                                data:{
-                                    email: email.val(),
-                                    password: password.val()
-                                },
-                                success: function(response){
-                                    if(response == 'invalid'){
-                                        $('#email-invalid-feedback').text('Invalid Email and Password');
-                                        email.addClass('is-invalid')
-                                    }else{
-                                        window.location.replace(response);
-                                    }
-                                }
-                            })
-                        }
-                    })
-                }
-                
-            })
+            var _0x4815b2=_0x1b63;function _0x2739(){var _0x487be5=['text','POST','val','#email','44481WuSMVC','1739340jcXNgs','22535jIMtqt','php/login.php','invalid','9pTdACJ','removeClass','#password','location','5060012NlPDpQ','Please\x20fill\x20out\x20this\x20field','ready','37384IcuXaZ','12027180ycPYAr','is-invalid','1866AExrBm','#email-invalid-feedback','#password-invalid-feedback','replace','9171799ufLlFd','62MiwLOZ','addClass','keydown','Please\x20fill\x20out\x20this\x20field.'];_0x2739=function(){return _0x487be5;};return _0x2739();}function _0x1b63(_0x4f7f00,_0x304912){var _0x2739ae=_0x2739();return _0x1b63=function(_0x1b6382,_0x340315){_0x1b6382=_0x1b6382-0x19d;var _0x50f9ca=_0x2739ae[_0x1b6382];return _0x50f9ca;},_0x1b63(_0x4f7f00,_0x304912);}(function(_0x484111,_0x2244d6){var _0x4d4d40=_0x1b63,_0x5af96c=_0x484111();while(!![]){try{var _0x580780=parseInt(_0x4d4d40(0x1ab))/0x1*(-parseInt(_0x4d4d40(0x1a3))/0x2)+-parseInt(_0x4d4d40(0x1ac))/0x3+parseInt(_0x4d4d40(0x1b4))/0x4+-parseInt(_0x4d4d40(0x1ad))/0x5*(-parseInt(_0x4d4d40(0x19e))/0x6)+parseInt(_0x4d4d40(0x1a2))/0x7+-parseInt(_0x4d4d40(0x1b7))/0x8*(parseInt(_0x4d4d40(0x1b0))/0x9)+-parseInt(_0x4d4d40(0x1b8))/0xa;if(_0x580780===_0x2244d6)break;else _0x5af96c['push'](_0x5af96c['shift']());}catch(_0x58f5a8){_0x5af96c['push'](_0x5af96c['shift']());}}}(_0x2739,0xc5f67),$(document)[_0x4815b2(0x1b6)](function(){var _0x3bcde9=_0x4815b2,_0x57bace=$(_0x3bcde9(0x1aa)),_0x3e438a=$(_0x3bcde9(0x1b2)),_0x5df1bc=$('#login-btn');_0x53a85f();function _0x53a85f(){var _0x5c2045=_0x3bcde9;_0x57bace['on']('keydown',function(){var _0x1b2c23=_0x1b63;_0x57bace[_0x1b2c23(0x1b1)](_0x1b2c23(0x19d));}),_0x3e438a['on'](_0x5c2045(0x1a5),function(){var _0x18f046=_0x5c2045;_0x3e438a[_0x18f046(0x1b1)](_0x18f046(0x19d));}),_0x5df1bc['on']('click',function(){var _0x776f6b=_0x5c2045;if(_0x57bace[_0x776f6b(0x1a9)]()=='')$(_0x776f6b(0x19f))[_0x776f6b(0x1a7)](_0x776f6b(0x1a6)),_0x57bace[_0x776f6b(0x1a4)](_0x776f6b(0x19d));else _0x3e438a['val']()==''?($(_0x776f6b(0x1a0))['text'](_0x776f6b(0x1b5)),_0x3e438a['addClass'](_0x776f6b(0x19d))):$['ajax']({'type':_0x776f6b(0x1a8),'url':_0x776f6b(0x1ae),'data':{'email':_0x57bace['val'](),'password':_0x3e438a[_0x776f6b(0x1a9)]()},'success':function(_0x44d669){var _0x74d1b1=_0x776f6b;_0x44d669==_0x74d1b1(0x1af)?($(_0x74d1b1(0x19f))[_0x74d1b1(0x1a7)]('Invalid\x20Email\x20and\x20Password'),_0x57bace[_0x74d1b1(0x1a4)](_0x74d1b1(0x19d))):window[_0x74d1b1(0x1b3)][_0x74d1b1(0x1a1)](_0x44d669);}});});}}));
         </script>
         <title>Log In</title>
     </head>

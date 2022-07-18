@@ -1,0 +1,439 @@
+$(document).ready(function(){
+            var globalUserId = 0;
+            var noPosts = $('#no-posts');
+            var complaintsTable = $('#complaints-table');
+            var receiverName = $('#receiver-name');
+            var messageList = $('#message-list');
+            var messageText = $('#message-text');
+            var sendMessage = $('#send-message');
+            var messageTextFeedback = $('#message-text-feedback');
+            var profileUserTYpe = $('#profile-user-type');
+            var submitComplainSection = $('.submit-complain-section');
+
+            var submitComplain = $('#submit-complain');
+            var complain = $('#complain');
+            var updatePassword = $('#update-password');
+            var confirmPassword = $('#confirm-password');
+            var confirmEditProfile = $('#confirm-edit-profile');
+            var messagesLink = $('#messages-link');
+            var messagesSection = $('#messages-section');
+            var messageUsers = $('#message-users');
+            var editProfileModalTrigger = $('#edit-profile-modal-trigger');
+            var updateEmail = $('#update-email');
+            var updateName = $('#update-name');
+            var imageUpload = $('#image-upload');
+            var confirmImageUpload = $('#confirm-image-upload');
+            var profilePicture = $('#profile-picture');
+            var profileEmail = $('#profile-email');
+            var profileName = $('#profile-name');
+            var profileSection = $('#profile-section');
+            var profileLink = $('#profile-link');
+            var forumSection = $('#forum-section');
+            var announcementLink = $('#announcement-link');
+            var logout = $('#logout');
+            var homeLink = $('#home-link');
+            var posts = $('#posts');
+            var navigationLink = $('.navigation-link');
+            var announcmentSection = $('#announcment-section');
+            var announcementTable = $('#announcement-table');
+            navigationLink.on('click', function(){
+                navigationLink.removeClass('navigation-is-active');
+                $(this).addClass('navigation-is-active');
+            })
+
+            editProfileModalTrigger.on('click', function(){
+                getProfileToEditFunc(updateName,updateEmail);
+            })
+            session();
+            getPostsFunc();
+
+            homeLink.on('click', function(){
+                messagesSection.hide();
+                profileSection.hide();
+                announcmentSection.hide();
+                forumSection.show();
+                posts.children().remove();
+                getPostsFunc();
+            });
+
+            announcementLink.on('click', function(){
+                messagesSection.hide();
+                profileSection.hide();
+                announcmentSection.show();
+                announcementTable.children().remove();
+                forumSection.hide();
+                getAnnouncementsFunc();
+            })
+
+            profileLink.on('click', function(){
+                messagesSection.hide();
+                profileSection.show();
+                announcmentSection.hide();
+                forumSection.hide();
+                getProfileFunc(profileName, profileEmail, profileUserTYpe);
+            })
+
+            messagesLink.on('click', function(){
+                profileSection.hide();
+                announcmentSection.hide();
+                forumSection.hide();
+                messagesSection.show();
+                getUsersToMessageFunc();
+            })
+            submitComplainSection.hide();
+            announcmentSection.hide();
+            profileSection.hide();
+            messagesSection.hide();
+
+            logoutFunc();
+            
+
+            confirmImageUpload.on('click', function(){
+                if(imageUpload.val() == ""){
+                    alert('Please choose an image file.');
+                }else{
+                    changeProfilePicture();
+                }
+            })
+
+            confirmEditProfile.on('click', function(){
+                editProfileFunc(profileName, profileEmail);
+            })
+
+            complain.on('keydown', function(){
+                complain.removeClass('is-invalid');
+            })
+            submitComplain.on('click', function(){
+                if(complain.val() == ""){
+                    $('#complain-feedback').text('Please fill out this field.');
+                    complain.addClass('is-invalid');
+                }else{
+                    complain.removeClass('is-invalid');
+                    submitComplainFunc(complain);
+                    complain.val('');
+                }
+            })
+
+            messageText.on('keydown', function(){
+                messageText.removeClass('is-invalid');
+            })
+            sendMessage.on('click', function(){
+                if(messageText.val() == ""){
+                    messageTextFeedback.text('Please fill out this field.')
+                    messageText.addClass('is-invalid');
+                }else{
+                    sendMessageFunc(messageText, globalUserId);
+                }
+            })
+
+            function sendMessageFunc(message, userId){
+                $.ajax({
+                    type: 'POST',
+                    url: 'php/sendMessage.php',
+                    data:{
+                        message: message.val(),
+                        receiver_id: userId
+                    },
+                    success: function(response){
+                        message.val('');
+                        var data = JSON.parse(response);
+                        messageList.append(`<div class="card shadow bg-success text-light ms-auto col-7 rounded-4 mt-3"><div class="card-body">${data.message}</div></div>`)
+                    }
+                })
+            }
+
+            function submitComplainFunc(complain){
+                $.ajax({
+                    type: 'POST',
+                    url: 'php/submitComplain.php',
+                    data:{
+                        complain: complain.val()
+                    },
+                    success: function(response){
+                        if(response != 'index.html'){
+                            alert('Complaint has been sent to the Administrator. ')
+                        }else{
+                            window.location.replace(response);
+                        }
+                        
+                    }
+                })
+            }
+            function editProfileFunc(profilename, profileemail){
+                $.ajax({
+                    type: 'POST',
+                    url: 'php/updateProfile.php',
+                    data:{
+                        name: updateName.val(),
+                        email: updateEmail.val(),
+                        password: updatePassword.val()
+                    },
+                    success: function(response){
+                        console.log(response);
+                        if(response == 'ok'){
+                            profilename.text(updateName.val());
+                            profileemail.text(updateEmail.val());
+                        }else{
+                            alert('Session not valid. You will be redirected to login page.');
+                            window.location.replace(response);
+                        }
+                        
+                    }
+                })
+            }
+
+
+            function getUsersToMessageFunc(){
+                messageUsers.children().remove();
+                $.ajax({
+                    type: 'GET',
+                    url: 'php/getUsers.php',
+                    success: function(response){
+                        if(response == 'index.html'){
+                            window.location.replace(response);
+                        }else{
+                            var data = JSON.parse(response);
+                            $(data).each(function(index, value){
+                                messageUsers.append(`<div class="card col-lg-5 mx-auto mt-2">
+                                                        <div class="card-body">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-fill" viewBox="0 0 16 16">
+                                                            <path d="M8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6-.097 1.016-.417 2.13-.771 2.966-.079.186.074.394.273.362 2.256-.37 3.597-.938 4.18-1.234A9.06 9.06 0 0 0 8 15z"/>
+                                                            </svg><button data-bs-toggle="modal" data-bs-target="#conversation-modal" class="btn btn-link ms-3 user" value="${value.id}">${value.name}</button>
+                                                        </div>
+                                                    </div>`)
+                            })
+
+                            var user = $('.user');
+                            user.on('click', function(){
+                                receiverName.text($(this).text());
+                                globalUserId = $(this).val();
+                                var thisUserId = $(this).val();
+                                messageList.children().remove();
+
+                                $.ajax({
+                                    type: 'GET',
+                                    url: 'php/getMessages.php',
+                                    data: {
+                                        user_id: thisUserId
+                                    },
+                                    success: function(response){
+                                        console.log(response);
+                                        var data = JSON.parse(response);
+                                        $(data).each(function(index, value){
+                                            if(value.mine == false){
+                                                messageList.append(`<div class="card shadow bg-light text-dark me-auto col-7 rounded-4 mt-3"><div class="card-body">${value.message.message}</div></div>`)
+                                            }else{
+                                                messageList.append(`<div class="card shadow bg-success text-light ms-auto col-7 rounded-4 mt-3"><div class="card-body">${value.message.message}</div></div>`)
+                                            }
+                                        })
+                                    }
+                                })
+                            })
+                        }
+                        
+                    }
+                })
+            }
+            function changeProfilePicture(){
+                var formData = new FormData();
+                formData.append("image", imageUpload[0].files[0]);
+                $.ajax({
+                    type: 'POST',
+                    url: 'php/uploadProfilePicture.php',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response){
+                        if(response == 'invalid'){
+                            alert('Invalid file. Please upload image files only.');
+                        }else{
+                            profilePicture.attr("src",response);
+                        }
+                    }
+                })
+            }
+
+            function getProfileToEditFunc(name, email){
+                $.ajax({
+                    type: 'GET',
+                    url: 'php/getMyProfile.php',
+                    success: function(response){
+                        if(response != 'index.html'){
+                            var data = JSON.parse(response);
+                            name.val(data.name);
+                            email.val(data.email);
+                            
+                        }else{
+                            window.location.replace(response);
+                        }
+                    }
+                })
+            }
+
+
+            function getProfileFunc(name, email, usertype){
+                complaintsTable.children().remove();
+                $.ajax({
+                    type: 'GET',
+                    url: 'php/getMyProfile.php',
+                    success: function(response){
+                        console.log(response);
+                        if(response != 'index.html'){
+                            var data = JSON.parse(response);
+                            name.text(data.name);
+                            email.text(data.email);
+                            usertype.text(data.user_type);
+                            if(data.user_type == 'Student'){
+                                submitComplainSection.show()
+                            }else{
+                                submitComplainSection.hide();
+                            }
+                            if(data.profile_picture != null){
+                                profilePicture.attr("src",data.profile_picture);
+                            }
+                        }else{
+                            window.location.replace(response);
+                        }
+                    }
+                })
+
+                $.ajax({
+                    type: 'GET',
+                    url: 'php/getMyComplaints.php',
+                    success: function(response){
+                        console.log(response);
+                        var data = JSON.parse(response);
+                        $(data).each(function(index, value){
+                            complaintsTable.append(`<tr><td>${value.complaint}</td><td>${value.status}</td><td>${value.date}</td></tr>`);
+                        })
+                    }
+                })
+            }
+            function getAnnouncementsFunc(){
+                $.ajax({
+                    type: 'GET',
+                    url: 'php/getAnnouncements.php',
+                    success: function(response){
+                        var data = JSON.parse(response);
+                        $(data).each(function(index, value){
+                            announcementTable.append(`<tr><td>${value.announcement}</td><td>${value.date}</td></tr>`)
+                        })
+                    }
+                })
+            }
+            function logoutFunc(){
+                logout.on('click', function(){
+                    $.ajax({
+                        type: 'GET',
+                        url: 'php/logout.php',
+                        success: function(response){
+                            window.location.replace(response);
+                        }
+                    })
+                })
+            }
+            function getPostsFunc(){
+                $.ajax({
+                    type: 'GET',
+                    url: 'php/getAdminPosts.php',
+                    success: function(response){
+                        console.log(response);
+                        if(response != 'index.html'){
+                            var data = JSON.parse(response);
+                            $(data).each(function(index, value){
+                                noPosts.hide();
+                                posts.append(`<div class="col-lg-6 mx-auto card mt-5 shadow rounded-3">
+                                    <div class="card-body">
+                                        <div class="d-flex">
+                                            <img src="${value.profile_picture}" class="img-fluid" style="height:50px;width:50px;border-radius:100%">
+                                            <div class="ms-3">
+                                                <p class="lh-sm"><span class="fw-bold fs-4">${value.name}</span></span><br>${value.date}</p>
+                                            </div>
+                                        </div>
+                                        <p class="fs-2">${value.description}</p>
+                                    </div>
+                                    <div class="card-footer">
+                                        <h5 class="fw-bold">Comments</h5>
+                                        <div class="comment-list">
+                                            
+                                        </div>
+                                        <div class="input-group mt-3">
+
+                                                <input class="write-comment form-control" type="text" placeholder="Write a comment...">
+                                                <div class="invalid-feedback">Please fill out this field.</div>
+                                            <button value="${value.post_id}" class="write-comment-btn btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-fill" viewBox="0 0 16 16">
+                                            <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
+                                            </svg></button>
+                                        </div>
+                                    </div>
+                                </div>`)
+
+                                var commentList = posts.children().eq(index).find('.comment-list');
+                                $(value.comments).each(function(index, value){
+                                    commentList.append(`<div class="card mt-2">
+                                                        <div class="card-body">
+                                                            <p class="lh-sm">
+                                                                <span class="fw-bold">${value.name}</span><br>
+                                                                <span class="fs-6">${value.comment}</span>
+                                                            </p>
+                                                        </div>
+                                                    </div>`)
+                                })
+                                
+                            })
+
+                            var writeComment = $('.write-comment');
+                            var writeCommentBtn = $('.write-comment-btn')
+
+                            writeComment.on('keydown', function(){
+                                $(this).removeClass('is-invalid');
+                            })
+                            writeCommentBtn.on('click', function(){
+                                var thisWriteComment = $(this).parent().children().eq(0);
+                                var thisWriteCommentBtn = $(this);
+                                var thisCommentList = $(this).parent().parent().children().eq(1);
+                                if(thisWriteComment.val() == ""){
+                                    thisWriteComment.addClass('is-invalid');
+                                }else{
+                                    $.ajax({
+                                        type: 'POST',
+                                        url: 'php/postComment.php',
+                                        data:{
+                                            comment: thisWriteComment.val(),
+                                            post_id: thisWriteCommentBtn.val()
+                                        },
+                                        success: function(response){
+                                            if(response != 'index.html'){
+                                                thisWriteComment.val('');
+
+                                                var data = JSON.parse(response);
+                                                thisCommentList.append(`<div class="card mt-2">
+                                                                            <div class="card-body">
+                                                                                <p class="lh-sm">
+                                                                                    <span class="fw-bold">${data.name}</span><br>
+                                                                                    <span class="fs-6">${data.comment}</span>
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>`)
+                                            }
+                                        }
+                                    })
+                                }
+                            })
+                        }
+                    }
+                })
+            }
+
+            function session(){
+                $.ajax({
+                    type: 'GET',
+                    url: 'php/panelSession.php',
+                    success: function(response){
+                        if(response != 'ok'){
+                            window.location.replace('index.html');
+                        }
+                    }
+                })
+            }
+        })
