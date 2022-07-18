@@ -171,6 +171,7 @@ $(document).ready(function(){
                     success: function(response){
                         console.log(response);
                         if(response == 'ok'){
+                            alert('Profile has been updated.');
                             profilename.text(updateName.val());
                             profileemail.text(updateEmail.val());
                         }else{
