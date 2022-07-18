@@ -8,7 +8,7 @@
         if(isset($_POST) && isset($_SESSION['user_id'])){
             $userId = $_SESSION['user_id'];
             $receiverId = $_POST['receiver_id'];
-            $message = $_POST['message'];
+            $message = htmlspecialchars($_POST['message']);
     
             $query = "INSERT INTO messages(`sender_id`,`receiver_id`,`message`,`read`,`created_at`,`updated_at`)VALUES('$userId','$receiverId','$message','no','$today','$today')";
             $con->query($query) or die($con->query);
