@@ -1,6 +1,6 @@
 <?php
 
-    if($_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest' && isset($_SERVER['HTTP_X_REQUEST_WITH'])){
+    if($_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest' && isset($_SERVER['HTTP_X_REQUESTED_WITH'])){
         session_start();
         include('connection.php');
         $con = connect();
