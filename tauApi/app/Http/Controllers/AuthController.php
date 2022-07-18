@@ -68,4 +68,30 @@ class AuthController extends Controller
             'profile_picture' => $user->profile_picture
         ], 200);
     }
+
+    public function updateProfile(Request $request){
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required',
+            'password' => 'required',
+        ]);
+
+
+        $token = PersonalAccessToken::findToken($request->bearerToken());
+        $id = $token->tokenable->id;
+        $user = User::where('id', $id)->first();
+
+        $name = htmlspecialchars($request['name']);
+        $email = htmlspecialchars($request['email']);
+        $password = bcrypt($request['password']);
+
+        $user->update([
+            'name' => $name,
+            'email' => $email,
+            'password' => $password,
+        ]);
+
+
+        return response($user, 200);
+    }
 }
