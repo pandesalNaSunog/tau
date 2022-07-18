@@ -60,4 +60,24 @@ class MessageController extends Controller
 
         return response($users, 200);
     }
+
+    public function sendMessage(Request $request){
+        $request->validate([
+            'message' => 'required',
+            'receiver_id' => 'required'
+        ]);
+
+
+        $token = PersonalAccessToken::findToken($request->bearerToken());
+        $id = $token->tokenable->id;
+
+        $message = Message::create([
+            'sender_id' => $id,
+            'receiver_id' => $request['receiver_id'],
+            'message' => $request['message'],
+            'read' => 'no',
+        ]);
+
+        return response($message, 200);
+    }
 }
