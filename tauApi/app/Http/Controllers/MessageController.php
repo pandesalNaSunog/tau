@@ -78,6 +78,15 @@ class MessageController extends Controller
             'read' => 'no',
         ]);
 
-        return response($message, 200);
+        $mine = true;
+
+        return response([
+            'id' => $message->id,
+            'sender_id' => $message->sender_id,
+            'receiver_id' => $message->receiver_id,
+            'message' => $message->message,
+            'read' => $message->read,
+            'mine' => $mine
+        ], 200);
     }
 }
