@@ -5,8 +5,8 @@
         $con = connect();
         $date = getCurrentDate();
         if(isset($_POST) && isset($_SESSION['admin_id'])){
-            $title = $_POST['title'];
-            $description = $_POST['description'];
+            $title = htmlspecialchars($_POST['title']);
+            $description = htmlspecialchars($_POST['description']);
             $query = "INSERT INTO announcements(`title`,`description`,`created_at`,`updated_at`)VALUES('$title','$description','$date','$date')";
             $con->query($query) or die($con->error);
             $query = "SELECT * FROM announcements WHERE id = LAST_INSERT_ID()";

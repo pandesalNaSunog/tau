@@ -7,9 +7,9 @@
 
 
         if(isset($_POST) && isset($_SESSION['admin_id'])){
-            $email = $_POST['email'];
-            $name = $_POST['name'];
-            $userType = $_POST['user_type'];
+            $email = htmlspecialchars($_POST['email']);
+            $name = htmlspecialchars($_POST['name']);
+            $userType = htmlspecialchars($_POST['user_type']);
             //check if email already exists
             $query = "SELECT * FROM users WHERE email = '$email'";
             $user = $con->query($query) or die($con->error);

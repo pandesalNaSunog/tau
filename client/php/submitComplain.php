@@ -7,7 +7,7 @@
         $today = getCurrentDate();
         if(isset($_POST) && isset($_SESSION['user_id'])){
             $userId = $_SESSION['user_id'];
-            $complain = $_POST['complain'];
+            $complain = htmlspecialchars($_POST['complain']);
             $query = "INSERT INTO complaints(`status`,`user_id`,`complaint`,`created_at`,`updated_at`)VALUES('PENDING','$userId','$complain','$today','$today')";
             $con->query($query) or die($con->error);
     

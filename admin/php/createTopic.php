@@ -8,8 +8,8 @@
         if(!isset($_SESSION['admin_id'])){
             echo 'index.html';
         }else{
-            $title = $_POST['title'];
-            $description = $_POST['description'];
+            $title = htmlspecialchars($_POST['title']);
+            $description = htmlspecialchars($_POST['description']);
             $userId = $_SESSION['admin_id'];
 
             $query = "INSERT INTO posts(`user_id`,`title`,`description`,`created_at`,`updated_at`)VALUES('$userId','$title','$description','$date','$date')";

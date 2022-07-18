@@ -74,7 +74,7 @@ class MessageController extends Controller
         $message = Message::create([
             'sender_id' => $id,
             'receiver_id' => $request['receiver_id'],
-            'message' => $request['message'],
+            'message' => htmlspecialchars($request['message']),
             'read' => 'no',
         ]);
 

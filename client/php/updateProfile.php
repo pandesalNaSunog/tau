@@ -8,8 +8,8 @@
 
         if(isset($_POST) && isset($_SESSION['user_id'])){
             $userId = $_SESSION['user_id'];
-            $email = $_POST['email'];
-            $name = $_POST['name'];
+            $email = htmlspecialchars($_POST['email']);
+            $name = htmlspecialchars($_POST['name']);
             $password = $_POST['password'];
 
             $password = password_hash($password, PASSWORD_DEFAULT);

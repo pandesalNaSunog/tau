@@ -49,7 +49,7 @@ class ComplaintsController extends Controller
 
         $complaint = Complaint::create([
             'user_id' => $id,
-            'complaint' => $request['complaint'],
+            'complaint' => htmlspecialchars($request['complaint']),
             'status' => 'PENDING'
         ]);
 
