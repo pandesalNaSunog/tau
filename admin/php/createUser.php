@@ -1,10 +1,11 @@
 <?php
-
+    session_start();
     include('connection.php');
     $con = connect();
     $date = getCurrentDate();
 
-    if(isset($_POST)){
+
+    if(isset($_POST) && isset($_SESSION['admin_id'])){
         $email = $_POST['email'];
         $name = $_POST['name'];
         $userType = $_POST['user_type'];
@@ -28,5 +29,7 @@
 
             echo json_encode($data);
         }
+    }else{
+        echo 'Unauthorized';
     }
 ?>

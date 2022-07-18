@@ -1,8 +1,9 @@
 <?php
+    session_start();
     include('connection.php');
     $con = connect();
 
-    if(isset($_GET)){
+    if(isset($_GET) && isset($_SESSION['admin_id'])){
         $query = "SELECT * FROM complaints";
         $complaint = $con->query($query) or die($con->error);
         $complaints = array();
