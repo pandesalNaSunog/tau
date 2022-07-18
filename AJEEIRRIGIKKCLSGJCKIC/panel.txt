@@ -1,0 +1,529 @@
+session();
+        function session(){
+            $.ajax({
+                type: 'GET',
+                url: 'php/adminSession.php',
+                success: function(response){
+                    if(response == 'index.html'){
+                        window.location.replace(response)
+                    }
+                }
+            })
+        }
+
+        $(document).ready(function(){
+            var complaintId = 0;
+            var complaintsTable = $('#complaints-table');
+            var createUserEmail = $('#create-user-email');
+            var createUserButton = $('#create-user-btn');
+            var usersTable = $('#users-table');
+            var createUserName = $('#create-user-name');
+            var userSection = $('#users-section');
+            var forumSection = $('#forum-section');
+            var complaintsSection = $('#complaints-section');
+            var navComplaints = $('#nav-complaints');
+            var navUsers = $('#nav-users');
+            var navForums = $('#nav-forums');
+            var createPostBtn = $('#create-post-btn');
+            var createTopicTitle = $('#create-topic-title');
+            var createTopicDescription = $('#create-topic-description');
+            var postsList = $('#posts');
+            var globalPostId = 0;
+            var userType = $('#create-user-type');
+            var navAnnouncements = $('#nav-announcements');
+            var announcmentSection = $('#announcement-section');
+            var subject = $('#subject');
+            var postAnnouncementBtn = $('#post-announcement-btn');
+            var announcement = $('#announcement');
+            var announcementTable= $('#announcement-table');
+            var logout = $('#logout');
+
+            postAnnouncementFunc();
+            createPost();
+            createUser();
+            getAllUsers();
+            selectNavMenus();
+            getAnnouncements();
+            logoutFunc();
+
+            userSection.show();
+            forumSection.hide();
+            complaintsSection.hide();
+            navUsers.addClass('active');
+            navForums.removeClass('active');
+            announcmentSection.hide();
+
+
+
+            function getStudentComplaints(){
+                complaintsTable.children().remove();
+                $.ajax({
+                    type: 'GET',
+                    url: 'php/getAllComplaints.php',
+                    success: function(response){
+                        var data = JSON.parse(response);
+                        $(data).each(function(index, value){
+                            complaintsTable.append(`<tr>
+                                                        <td>${value.student_name}</td>
+                                                        <td>${value.complaint}</td>
+                                                        <td>${value.date}</td>
+                                                        <td>${value.status}</td>
+                                                        <td>
+                                                            <div class="dropdown">
+                                                                <button class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown">
+                                                                    Take Action
+                                                                </button>
+                                                                <ul class="dropdown-menu">
+                                                                    <li>
+                                                                        <button value="${value.id}" class="acknowledge dropdown-item btn btn-success">Acknowledge</button>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+                                                        </td>
+                                                    </tr>`)
+                        })
+
+                        var acknowledge = $('.acknowledge');
+                        acknowledge.on('click', function(){
+                            var thisstatus = $(this).parent().parent().parent().parent().parent().children().eq(3)
+                            if(thisstatus.text() == 'ACKNOWLEDGED'){
+                                alert('This complaint has already been acknowledged.');
+                            }else{ 
+                                if(confirm('Acknowledge this complaint?') == true){
+                                    complaintId = $(this).val();
+                                    acknowledgeComplaint(complaintId, thisstatus);
+                                }
+                            }
+                            
+                        })
+                    }
+                })
+            }
+
+
+            function acknowledgeComplaint(complaintid, status){
+                $.ajax({
+                    type: 'POST',
+                    url: 'php/updateComplaintStatus.php',
+                    data:{
+                        complaint_id: complaintId
+                    },
+                    success: function(response){
+                        if(response == 'ok'){
+                            status.text('ACKNOWLEDGED');
+                        }
+                        
+                    }
+                })
+            }
+
+            function logoutFunc(){
+                logout.on('click', function(){
+                    $.get('php/logout.php', function(data){
+                        window.location.replace(data);
+                    })
+                })
+            }
+            function getAnnouncements(){
+                $.get('php/getAnnouncements.php',function(data){
+                    var parsed = JSON.parse(data);
+                    $(parsed).each(function(index, value){
+                        announcementTable.append(`<tr><td>${value.description}</td><td>${value.created_at}</td></tr>`)
+                    })
+                    
+                })
+            }
+            function postAnnouncementFunc(){
+                postAnnouncementBtn.on('click', function(){
+                    if(subject.val() == ""){
+                        subject.addClass('is-invalid');
+                    }else if(announcement.val() == ""){
+                        announcement.addClass('is-invalid');
+                    }else{
+                        $.ajax({
+                            type: 'POST',
+                            url: 'php/postAnnouncement.php',
+                            data:{
+                                title: subject.val(),
+                                description: announcement.val()
+                            },
+                            success: function(response){
+                                var data = JSON.parse(response);
+                                announcementTable.append(`<tr><td>${data.description}</td><td>${data.created_at}</td></tr>`)
+                                subject.val('');
+                                announcement.val('');
+                            }
+                        })
+                    }
+                })
+            }
+            function getPostComments(postId, commentList, postIndex){
+                $.ajax({
+                    type: 'POST',
+                    url: 'php/getPostAlongWithComments.php',
+                    data: {
+                        post_id: postId
+                    },
+                    success: function(response){
+                        console.log(postIndex);
+                        var data = JSON.parse(response);
+                        $(data).each(function(index, value){
+                            commentList.eq(postIndex).append(`<div class="card shadow mt-2">
+                                                                    <div class="card-body">
+                                                                        <p class="lh-sm">
+                                                                            <span class="fw-bold">${value.name}</span><br>
+                                                                            <span class="fs-6">${value.comment}</span>
+                                                                        </p>
+                                                                        
+                                                                    </div>
+                                                                </div>`)
+                        })
+                    }
+                })
+            }
+
+            function writeCommentFunc(writeComment, writeCommentBtn){
+                if(writeComment.val() != ""){
+                    $.ajax({
+                        type: 'POST',
+                        url: 'php/writeComment.php',
+                        data:{
+                            comment: writeComment.val(),
+                            post_id: writeCommentBtn.val()
+                        },
+                        success: function(response){
+                            writeCommentBtn.parent().parent().children().eq(1).append()
+                        }
+                    })
+                }
+            }
+
+            function getAllPosts(){
+                $.ajax({
+                    type: 'GET',
+                    url: 'php/getAllPosts.php',
+                    success: function(response){
+                        if(response == 'index.html'){
+                            window.location.replace(response);
+                        }else{
+                            var data = JSON.parse(response);
+                            $(data).each(function(index, value){
+                                postsList.append(`<div class="post card shadow col-md-6 mx-auto mt-1">
+                                                        <div class="card-body">
+                                                            <div class="d-flex">
+                                                                <img src="${value.profile_picture}" class="img-fluid" style="height:50px;width:50px;border-radius:100%">
+                                                                <div class="ms-3">
+                                                                    <p class="lh-sm"><span class="fw-bold fs-4">${value.name}</span></span><br>${value.date}</p>
+                                                                </div>
+                                                                <button value="${value.post_id}" class="delete-post btn btn-outline-success ms-auto my-2">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                                                        <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
+                                                            <p class="fs-2">${value.description}</p>
+                                                        </div>
+                                                        <div class="card-footer">
+                                                            <h5 class="fw-bold">Comments</h5>
+                                                            <div class="comment-list">
+
+                                                            </div>
+                                                            <div class="input-group mt-3">
+                                                                <input class="form-control" type="text" placeholder="Write a comment...">
+                                                                <button value="${value.post_id}" class="write-comment-btn btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-fill" viewBox="0 0 16 16">
+                                                                <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
+                                                                </svg></button>
+                                                            </div>
+                                                        </div>
+                                                    </div>`);
+                                var commentList = $('.comment-list');
+                                getPostComments(value.post_id, commentList, index);
+                            })
+                            var writeCommentBtn = $('.write-comment-btn')
+
+                            writeCommentBtn.on('click', function(){
+                                var thisWriteComment = $(this).parent().children().eq(0);
+                                writeCommentFunc(thisWriteComment, $(this));
+                            })
+                            
+
+
+                            const postObserver = new IntersectionObserver(entries => {
+                                entries.forEach(entry =>{
+                                    if(entry.isIntersecting){
+                                        entry.target.classList.add('ease-in');
+                                        return;
+                                    }
+                                    entry.target.classList.remove('ease-in');
+                                })
+                            })
+
+                            document.querySelectorAll('.post').forEach(function callback(value, index){
+                                postObserver.observe(document.querySelectorAll('.post')[index]);
+                            })
+                                
+                            
+                            
+
+                            
+                            
+                            
+            
+                            
+                            var deletePostButton = $('.delete-post');
+                            deletePostButton.on('click', function(){
+                                var thisDelete = $(this);
+                                deletePost(thisDelete);
+                            })
+                        }
+                        
+                    }
+                })
+            }
+
+
+
+            function deletePost(deleteButton){
+                $.ajax({
+                    type: 'POST',
+                    url: 'php/deletePost.php',
+                    data:{
+                        post_id: deleteButton.val()
+                    },
+                    success: function(response){
+                        if(response == 'index.html'){
+                            window.location.replace(response);
+                        }else{
+                            deleteButton.parent().parent().parent().remove();
+                            alert('Post has been removed.');
+                        }
+                        
+                    }
+                })
+            }
+            function createPost(){
+                createTopicTitle.on('keydown', function(){
+                    $(this).removeClass('is-invalid');
+                })
+                createTopicDescription.on('keydown', function(){
+                    $(this).removeClass('is-invalid');
+                })
+                createPostBtn.on('click', function(){
+                    if(createTopicDescription.val() == ""){
+                        createTopicDescription.addClass('is-invalid');
+                    }else if(createTopicTitle.val() == ""){
+                        createTopicTitle.addClass('is-invalid');
+                    }else{
+                        $.ajax({
+                            type: 'POST',
+                            url: 'php/createTopic.php',
+                            data: {
+                                title: createTopicTitle.val(),
+                                description: createTopicDescription.val()
+                            },
+                            success: function(response){
+                                console.log(response);
+                                createTopicTitle.val('');
+                                createTopicDescription.val('');
+                                var data = JSON.parse(response);
+                                postsList.prepend(`<div class="card shadow col-md-6 mx-auto mt-1">
+                                                        <div class="card-body">
+                                                            <div class="d-flex">
+                                                                <img src="images/071312_pidol4.webp" class="img-fluid" style="height:50px;width:50px;border-radius:100%">
+                                                                <div class="ms-3">
+                                                                    <p class="lh-sm"><span class="fw-bold fs-4">${data.name}</span></span><br>${data.date}</p>
+                                                                </div>
+                                                                <button value="${data.post_id}" class="delete-post btn btn-outline-success ms-auto my-2">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                                                        <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
+                                                            <p class="fs-2">${data.description}</p>
+                                                        </div>
+                                                        <div class="card-footer">
+                                                            <h5 class="fw-bold">Comments</h5>
+                                                            <div class="comment-list">
+
+                                                            </div>
+                                                            <div class="input-group mt-3">
+                                                                <input class="form-control" type="text" placeholder="Write a comment...">
+                                                                <button value="${data.post_id}" class="write-comment-btn btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-fill" viewBox="0 0 16 16">
+                                                                <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
+                                                                </svg></button>
+                                                            </div>
+                                                        </div>
+                                                    </div>`);
+                                var deletePostButton = $('.delete-post');
+                                deletePostButton.on('click', function(){
+                                    var thisDelete = $(this);
+                                    deletePost(thisDelete);
+                                })
+                            }
+                        })
+                    }
+                })
+            }
+            
+            function selectNavMenus(){
+
+                navUsers.on('click', function(){
+                    $('.nav-link').removeClass('active');
+                    $(this).addClass('active');
+                    userSection.show();
+                    forumSection.hide();
+                    complaintsSection.hide();
+                    announcmentSection.hide();
+                })
+                navForums.on('click', function(){
+                    $('.nav-link').removeClass('active');
+                    $(this).addClass('active');
+                    forumSection.show();
+                    postsList.children().remove();
+                    getAllPosts();
+                    userSection.hide();
+                    announcmentSection.hide();
+                    complaintsSection.hide();
+                })
+
+                navAnnouncements.on('click', function(){
+                    $('.nav-link').removeClass('active');
+                    $(this).addClass('active');
+                    forumSection.hide()
+                    userSection.hide();
+                    announcmentSection.show();
+                    complaintsSection.hide();
+                })
+                navComplaints.on('click', function(){
+                    $('.nav-link').removeClass('active');
+                    $(this).addClass('active');
+                    forumSection.hide();
+                    userSection.hide();
+                    announcmentSection.hide();
+                    complaintsSection.show();
+                    getStudentComplaints();
+                })
+            }
+            function getAllUsers(){
+                $.ajax({
+                    type: 'GET',
+                    url: 'php/getAllUsers.php',
+                    success: function(response){
+                        var data = JSON.parse(response);
+                        $(data).each(function(index, value){
+                            usersTable.append(`<tr>
+                                                    <td>${value.name}</td>
+                                                    <td>${value.email}</td>
+                                                    <td>
+                                                        <button value="${value.id}" class="edit-user btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                                            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                                                            </svg>
+                                                        </button>
+                                                        <button value="${value.id}" class="delete-user btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                                            <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                                                            </svg>
+                                                        </button>
+                                                    </td>
+                                                </tr>`);
+                        })
+
+                        var editUser = $('.edit-user');
+                        var deleteUser = $('.delete-user');
+
+                        deleteUser.on('click', function(){
+                            var thisDelete = $(this);
+                            if(confirm("Are you sure you want to delete this user? All data including comments and complains associated with this user will also be deleted.") == true){
+                                $.ajax({
+                                    type: 'POST',
+                                    url: 'php/deleteUser.php',
+                                    data:{
+                                        user_id: thisDelete.val(),
+                                    },
+                                    success: function(response){
+                                        if(response == 'ok'){
+                                            thisDelete.parent().parent().remove();
+                                        }
+                                    }
+                                })
+                            }
+                        })
+                    }
+                })
+            }
+            function createUser(){
+                createUserEmail.on('keydown', function(){
+                    createUserEmail.removeClass('is-invalid');
+                })
+
+                createUserName.on('keydown', function(){
+                    createUserName.removeClass('is-invalid');
+                })
+
+                createUserButton.on('click', function(){
+                    if(createUserEmail.val() == ""){
+                        createUserEmail.addClass('is-invalid');
+                    }else if(createUserName.val() == ""){
+                        createUserName.addClass('is-invalid');
+                    }else{
+                        createUserEmail.removeClass('is-invalid');
+                        $.ajax({
+                            type: 'POST',
+                            url: 'php/createUser.php',
+                            data: {
+                                email: createUserEmail.val(),
+                                name: createUserName.val(),
+                                user_type: userType.val()
+                            },
+                            success: function(response){
+                                if(response != 'email exists'){
+                                    createUserEmail.val('');
+                                    createUserName.val('');
+                                    var data = JSON.parse(response);
+                                    $(data).each(function(index, value){
+                                        usersTable.append(`<tr>
+                                                            <td>${value.name}</td>
+                                                            <td>${value.email}</td>
+                                                            <td>
+                                                                <button value="${value.id}" class="edit-user btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                                                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                                                    <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                                                                    </svg>
+                                                                </button>
+                                                                <button value="${value.id}" class="delete-user btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                                                    <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                                                                    </svg>
+                                                                </button>
+                                                            </td>
+                                                        </tr>`);
+                                    })
+                                    alert('New user has been successfully added.');
+                                    var editUser = $('.edit-user');
+                                    var deleteUser = $('.delete-user');
+
+                                    deleteUser.on('click', function(){
+                                        var thisDelete = $(this);
+                                        if(confirm("Are you sure you want to delete this user? All data including comments and complains associated with this user will also be deleted.") == true){
+                                            $.ajax({
+                                                type: 'POST',
+                                                url: 'php/deleteUser.php',
+                                                data:{
+                                                    user_id: thisDelete.val(),
+                                                },
+                                                success: function(response){
+                                                    if(response == 'ok'){
+                                                        thisDelete.parent().parent().remove();
+                                                    }
+                                                }
+                                            })
+                                        }
+                                    })
+                                }else{
+                                    alert('Email already exists');
+                                }
+                            }
+                        })
+                    }
+                })
+            }
+        });
