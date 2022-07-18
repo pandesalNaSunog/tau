@@ -29,5 +29,7 @@
         }
 
         echo json_encode($complaints);
+    }else{
+        echo 'index.html';
     }
 ?>

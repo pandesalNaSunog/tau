@@ -12,6 +12,6 @@
         }
         echo json_encode($users);
     }else{
-        echo 'unauthorized';
+        echo 'index.html';
     }
 ?>

@@ -14,6 +14,6 @@
 
         echo 'ok';
     }else{
-        echo 'Unauthorized';
+        echo 'index.html';
     }
 ?>

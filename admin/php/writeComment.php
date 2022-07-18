@@ -15,5 +15,7 @@
         $row = $comment->fetch_assoc();
 
         echo json_encode($row);
+    }else{
+        echo 'index.html';
     }
 ?>

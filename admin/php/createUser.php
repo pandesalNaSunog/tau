@@ -30,6 +30,6 @@
             echo json_encode($data);
         }
     }else{
-        echo 'Unauthorized';
+        echo 'index.html';
     }
 ?>

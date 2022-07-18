@@ -10,13 +10,569 @@
     <script src="../js/jquery.js"></script>
 
     <script>
+        session();
+        function session(){
+            $.ajax({
+                type: 'GET',
+                url: 'php/adminSession.php',
+                success: function(response){
+                    if(response == 'index.html'){
+                        window.location.replace(response)
+                    }
+                }
+            })
+        }
 
+        $(document).ready(function(){
+            var complaintId = 0;
+            var complaintsTable = $('#complaints-table');
+            var createUserEmail = $('#create-user-email');
+            var createUserButton = $('#create-user-btn');
+            var usersTable = $('#users-table');
+            var createUserName = $('#create-user-name');
+            var userSection = $('#users-section');
+            var forumSection = $('#forum-section');
+            var complaintsSection = $('#complaints-section');
+            var navComplaints = $('#nav-complaints');
+            var navUsers = $('#nav-users');
+            var navForums = $('#nav-forums');
+            var createPostBtn = $('#create-post-btn');
+            var createTopicTitle = $('#create-topic-title');
+            var createTopicDescription = $('#create-topic-description');
+            var postsList = $('#posts');
+            var globalPostId = 0;
+            var userType = $('#create-user-type');
+            var navAnnouncements = $('#nav-announcements');
+            var announcmentSection = $('#announcement-section');
+            var subject = $('#subject');
+            var postAnnouncementBtn = $('#post-announcement-btn');
+            var announcement = $('#announcement');
+            var announcementTable= $('#announcement-table');
+            var logout = $('#logout');
+
+            postAnnouncementFunc();
+            createPost();
+            createUser();
+            getAllUsers();
+            selectNavMenus();
+            getAnnouncements();
+            logoutFunc();
+
+            userSection.show();
+            forumSection.hide();
+            complaintsSection.hide();
+            navUsers.addClass('active');
+            navForums.removeClass('active');
+            announcmentSection.hide();
+
+
+
+            function getStudentComplaints(){
+                complaintsTable.children().remove();
+                $.ajax({
+                    type: 'GET',
+                    url: 'php/getAllComplaints.php',
+                    success: function(response){
+                        if(response != 'index.html'){
+                            var data = JSON.parse(response);
+                            $(data).each(function(index, value){
+                                complaintsTable.append(`<tr>
+                                                            <td>${value.student_name}</td>
+                                                            <td>${value.complaint}</td>
+                                                            <td>${value.date}</td>
+                                                            <td>${value.status}</td>
+                                                            <td>
+                                                                <div class="dropdown">
+                                                                    <button class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown">
+                                                                        Take Action
+                                                                    </button>
+                                                                    <ul class="dropdown-menu">
+                                                                        <li>
+                                                                            <button value="${value.id}" class="acknowledge dropdown-item btn btn-success">Acknowledge</button>
+                                                                        </li>
+                                                                    </ul>
+                                                                </div>
+                                                            </td>
+                                                        </tr>`)
+                            })
+
+                            var acknowledge = $('.acknowledge');
+                            acknowledge.on('click', function(){
+                                var thisstatus = $(this).parent().parent().parent().parent().parent().children().eq(3)
+                                if(thisstatus.text() == 'ACKNOWLEDGED'){
+                                    alert('This complaint has already been acknowledged.');
+                                }else{ 
+                                    if(confirm('Acknowledge this complaint?') == true){
+                                        complaintId = $(this).val();
+                                        acknowledgeComplaint(complaintId, thisstatus);
+                                    }
+                                }
+                                
+                            })
+                        }else{
+                            window.location.replace(response);
+                        }
+                    }
+                })
+            }
+
+
+            function acknowledgeComplaint(complaintid, status){
+                $.ajax({
+                    type: 'POST',
+                    url: 'php/updateComplaintStatus.php',
+                    data:{
+                        complaint_id: complaintId
+                    },
+                    success: function(response){
+                        if(response == 'ok'){
+                            status.text('ACKNOWLEDGED');
+                        }else{
+                            window.location.replace(response);
+                        }
+                        
+                    }
+                })
+            }
+
+            function logoutFunc(){
+                logout.on('click', function(){
+                    $.get('php/logout.php', function(data){
+                        window.location.replace(data);
+                    })
+                })
+            }
+            function getAnnouncements(){
+                $.get('php/getAnnouncements.php',function(data){
+
+                    if(data != 'index.html'){
+                        var parsed = JSON.parse(data);
+                        $(parsed).each(function(index, value){
+                            announcementTable.append(`<tr><td>${value.description}</td><td>${value.created_at}</td></tr>`)
+                        })
+                    }else{
+                        window.location.replace(response);
+                    }
+                })
+            }
+            function postAnnouncementFunc(){
+                postAnnouncementBtn.on('click', function(){
+                    if(subject.val() == ""){
+                        subject.addClass('is-invalid');
+                    }else if(announcement.val() == ""){
+                        announcement.addClass('is-invalid');
+                    }else{
+                        $.ajax({
+                            type: 'POST',
+                            url: 'php/postAnnouncement.php',
+                            data:{
+                                title: subject.val(),
+                                description: announcement.val()
+                            },
+                            success: function(response){
+                                if(response != 'index.html'){
+                                    var data = JSON.parse(response);
+                                    announcementTable.append(`<tr><td>${data.description}</td><td>${data.created_at}</td></tr>`)
+                                    subject.val('');
+                                    announcement.val('');
+                                }else{
+                                    window.location.replace(response);
+                                }
+                                
+                            }
+                        })
+                    }
+                })
+            }
+            function getPostComments(postId, commentList, postIndex){
+                $.ajax({
+                    type: 'POST',
+                    url: 'php/getPostAlongWithComments.php',
+                    data: {
+                        post_id: postId
+                    },
+                    success: function(response){
+                        if(response != 'index.html'){
+                            var data = JSON.parse(response);
+                            $(data).each(function(index, value){
+                                commentList.eq(postIndex).append(`<div class="card shadow mt-2">
+                                                                        <div class="card-body">
+                                                                            <p class="lh-sm">
+                                                                                <span class="fw-bold">${value.name}</span><br>
+                                                                                <span class="fs-6">${value.comment}</span>
+                                                                            </p>
+                                                                            
+                                                                        </div>
+                                                                    </div>`)
+                            })
+                        }else{
+                            window.location.replace(response);
+                        }
+                    }
+                })
+            }
+
+            function writeCommentFunc(writeComment, writeCommentBtn){
+                if(writeComment.val() != ""){
+                    $.ajax({
+                        type: 'POST',
+                        url: 'php/writeComment.php',
+                        data:{
+                            comment: writeComment.val(),
+                            post_id: writeCommentBtn.val()
+                        },
+                        success: function(response){
+                            if(response != 'index.html'){
+                                writeCommentBtn.parent().parent().children().eq(1).append()
+                            }else{
+                                window.location.replace(response);
+                            }
+                        }
+                    })
+                }
+            }
+
+            function getAllPosts(){
+                $.ajax({
+                    type: 'GET',
+                    url: 'php/getAllPosts.php',
+                    success: function(response){
+                        if(response == 'index.html'){
+                            window.location.replace(response);
+                        }else{
+                            var data = JSON.parse(response);
+                            $(data).each(function(index, value){
+                                postsList.append(`<div class="post card shadow col-md-6 mx-auto mt-1">
+                                                        <div class="card-body">
+                                                            <div class="d-flex">
+                                                                <img src="${value.profile_picture}" class="img-fluid" style="height:50px;width:50px;border-radius:100%">
+                                                                <div class="ms-3">
+                                                                    <p class="lh-sm"><span class="fw-bold fs-4">${value.name}</span></span><br>${value.date}</p>
+                                                                </div>
+                                                                <button value="${value.post_id}" class="delete-post btn btn-outline-success ms-auto my-2">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                                                        <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
+                                                            <p class="fs-2">${value.description}</p>
+                                                        </div>
+                                                        <div class="card-footer">
+                                                            <h5 class="fw-bold">Comments</h5>
+                                                            <div class="comment-list">
+
+                                                            </div>
+                                                            <div class="input-group mt-3">
+                                                                <input class="form-control" type="text" placeholder="Write a comment...">
+                                                                <button value="${value.post_id}" class="write-comment-btn btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-fill" viewBox="0 0 16 16">
+                                                                <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
+                                                                </svg></button>
+                                                            </div>
+                                                        </div>
+                                                    </div>`);
+                                var commentList = $('.comment-list');
+                                getPostComments(value.post_id, commentList, index);
+                            })
+                            var writeCommentBtn = $('.write-comment-btn')
+
+                            writeCommentBtn.on('click', function(){
+                                var thisWriteComment = $(this).parent().children().eq(0);
+                                writeCommentFunc(thisWriteComment, $(this));
+                            })
+                            
+
+
+                            const postObserver = new IntersectionObserver(entries => {
+                                entries.forEach(entry =>{
+                                    if(entry.isIntersecting){
+                                        entry.target.classList.add('ease-in');
+                                        return;
+                                    }
+                                    entry.target.classList.remove('ease-in');
+                                })
+                            })
+
+                            document.querySelectorAll('.post').forEach(function callback(value, index){
+                                postObserver.observe(document.querySelectorAll('.post')[index]);
+                            })
+                                
+                            
+                            
+
+                            
+                            
+                            
+            
+                            
+                            var deletePostButton = $('.delete-post');
+                            deletePostButton.on('click', function(){
+                                var thisDelete = $(this);
+                                deletePost(thisDelete);
+                            })
+                        }
+                        
+                    }
+                })
+            }
+
+
+
+            function deletePost(deleteButton){
+                $.ajax({
+                    type: 'POST',
+                    url: 'php/deletePost.php',
+                    data:{
+                        post_id: deleteButton.val()
+                    },
+                    success: function(response){
+                        if(response == 'index.html'){
+                            window.location.replace(response);
+                        }else{
+                            deleteButton.parent().parent().parent().remove();
+                            alert('Post has been removed.');
+                        }
+                        
+                    }
+                })
+            }
+            function createPost(){
+                createTopicTitle.on('keydown', function(){
+                    $(this).removeClass('is-invalid');
+                })
+                createTopicDescription.on('keydown', function(){
+                    $(this).removeClass('is-invalid');
+                })
+                createPostBtn.on('click', function(){
+                    if(createTopicDescription.val() == ""){
+                        createTopicDescription.addClass('is-invalid');
+                    }else if(createTopicTitle.val() == ""){
+                        createTopicTitle.addClass('is-invalid');
+                    }else{
+                        $.ajax({
+                            type: 'POST',
+                            url: 'php/createTopic.php',
+                            data: {
+                                title: createTopicTitle.val(),
+                                description: createTopicDescription.val()
+                            },
+                            success: function(response){
+                                console.log(response);
+                                createTopicTitle.val('');
+                                createTopicDescription.val('');
+                                var data = JSON.parse(response);
+                                postsList.prepend(`<div class="card shadow col-md-6 mx-auto mt-1">
+                                                        <div class="card-body">
+                                                            <div class="d-flex">
+                                                                <img src="images/071312_pidol4.webp" class="img-fluid" style="height:50px;width:50px;border-radius:100%">
+                                                                <div class="ms-3">
+                                                                    <p class="lh-sm"><span class="fw-bold fs-4">${data.name}</span></span><br>${data.date}</p>
+                                                                </div>
+                                                                <button value="${data.post_id}" class="delete-post btn btn-outline-success ms-auto my-2">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                                                        <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
+                                                            <p class="fs-2">${data.description}</p>
+                                                        </div>
+                                                        <div class="card-footer">
+                                                            <h5 class="fw-bold">Comments</h5>
+                                                            <div class="comment-list">
+
+                                                            </div>
+                                                            <div class="input-group mt-3">
+                                                                <input class="form-control" type="text" placeholder="Write a comment...">
+                                                                <button value="${data.post_id}" class="write-comment-btn btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-fill" viewBox="0 0 16 16">
+                                                                <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
+                                                                </svg></button>
+                                                            </div>
+                                                        </div>
+                                                    </div>`);
+                                var deletePostButton = $('.delete-post');
+                                deletePostButton.on('click', function(){
+                                    var thisDelete = $(this);
+                                    deletePost(thisDelete);
+                                })
+                            }
+                        })
+                    }
+                })
+            }
+            
+            function selectNavMenus(){
+
+                navUsers.on('click', function(){
+                    $('.nav-link').removeClass('active');
+                    $(this).addClass('active');
+                    userSection.show();
+                    forumSection.hide();
+                    complaintsSection.hide();
+                    announcmentSection.hide();
+                })
+                navForums.on('click', function(){
+                    $('.nav-link').removeClass('active');
+                    $(this).addClass('active');
+                    forumSection.show();
+                    postsList.children().remove();
+                    getAllPosts();
+                    userSection.hide();
+                    announcmentSection.hide();
+                    complaintsSection.hide();
+                })
+
+                navAnnouncements.on('click', function(){
+                    $('.nav-link').removeClass('active');
+                    $(this).addClass('active');
+                    forumSection.hide()
+                    userSection.hide();
+                    announcmentSection.show();
+                    complaintsSection.hide();
+                })
+                navComplaints.on('click', function(){
+                    $('.nav-link').removeClass('active');
+                    $(this).addClass('active');
+                    forumSection.hide();
+                    userSection.hide();
+                    announcmentSection.hide();
+                    complaintsSection.show();
+                    getStudentComplaints();
+                })
+            }
+            function getAllUsers(){
+                $.ajax({
+                    type: 'GET',
+                    url: 'php/getAllUsers.php',
+                    success: function(response){
+                        if(response != 'index.html'){
+                            var data = JSON.parse(response);
+                            $(data).each(function(index, value){
+                                usersTable.append(`<tr>
+                                                        <td>${value.name}</td>
+                                                        <td>${value.email}</td>
+                                                        <td>
+                                                            <button value="${value.id}" class="edit-user btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                                                <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                                                <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                                                                </svg>
+                                                            </button>
+                                                            <button value="${value.id}" class="delete-user btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                                                <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                                                                </svg>
+                                                            </button>
+                                                        </td>
+                                                    </tr>`);
+                            })
+
+                            var editUser = $('.edit-user');
+                            var deleteUser = $('.delete-user');
+
+                            deleteUser.on('click', function(){
+                                var thisDelete = $(this);
+                                if(confirm("Are you sure you want to delete this user? All data including comments and complains associated with this user will also be deleted.") == true){
+                                    $.ajax({
+                                        type: 'POST',
+                                        url: 'php/deleteUser.php',
+                                        data:{
+                                            user_id: thisDelete.val(),
+                                        },
+                                        success: function(response){
+                                            if(response == 'index.html'){
+                                                window.location.replace(response);
+                                            }else if(response == 'ok'){
+                                                thisDelete.parent().parent().remove();
+                                            }
+                                        }
+                                    })
+                                }
+                            })
+                        }else{
+                            window.location.replace(response);
+                        }
+                    }
+                })
+            }
+            function createUser(){
+                createUserEmail.on('keydown', function(){
+                    createUserEmail.removeClass('is-invalid');
+                })
+
+                createUserName.on('keydown', function(){
+                    createUserName.removeClass('is-invalid');
+                })
+
+                createUserButton.on('click', function(){
+                    if(createUserEmail.val() == ""){
+                        createUserEmail.addClass('is-invalid');
+                    }else if(createUserName.val() == ""){
+                        createUserName.addClass('is-invalid');
+                    }else{
+                        createUserEmail.removeClass('is-invalid');
+                        $.ajax({
+                            type: 'POST',
+                            url: 'php/createUser.php',
+                            data: {
+                                email: createUserEmail.val(),
+                                name: createUserName.val(),
+                                user_type: userType.val()
+                            },
+                            success: function(response){
+
+                                if(response == 'index.html'){
+                                    window.location.replace(response);
+                                }else if(response != 'email exists'){
+                                    createUserEmail.val('');
+                                    createUserName.val('');
+                                    var data = JSON.parse(response);
+                                    $(data).each(function(index, value){
+                                        usersTable.append(`<tr>
+                                                            <td>${value.name}</td>
+                                                            <td>${value.email}</td>
+                                                            <td>
+                                                                <button value="${value.id}" class="edit-user btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                                                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                                                    <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                                                                    </svg>
+                                                                </button>
+                                                                <button value="${value.id}" class="delete-user btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                                                    <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                                                                    </svg>
+                                                                </button>
+                                                            </td>
+                                                        </tr>`);
+                                    })
+                                    alert('New user has been successfully added.');
+                                    var editUser = $('.edit-user');
+                                    var deleteUser = $('.delete-user');
+
+                                    deleteUser.on('click', function(){
+                                        var thisDelete = $(this);
+                                        if(confirm("Are you sure you want to delete this user? All data including comments and complains associated with this user will also be deleted.") == true){
+                                            $.ajax({
+                                                type: 'POST',
+                                                url: 'php/deleteUser.php',
+                                                data:{
+                                                    user_id: thisDelete.val(),
+                                                },
+                                                success: function(response){
+                                                    if(response == 'index.html'){
+                                                        window.location.replace(response);
+                                                    }else if(response == 'ok'){
+                                                        thisDelete.parent().parent().remove();
+                                                    }
+                                                }
+                                            })
+                                        }
+                                    })
+                                }else{
+                                    alert('Email already exists');
+                                }
+                            }
+                        })
+                    }
+                })
+            }
+        });
         
-
-        
-
-
-        function _0x574a(){var _0x30bf2b=['php/getPostAlongWithComments.php','#announcement-table','post_id','36ZWlYwa','parent','#nav-announcements','querySelectorAll','#create-user-btn','40209LWMDOJ','description','remove','click','#create-topic-description','php/postAnnouncement.php','removeClass','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>','.post','date','</td><td>','name','active','#users-table','Acknowledge\x20this\x20complaint?','#create-user-email','comment','addClass','<tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>','POST','.nav-link','<tr><td>','hide','292844opeXwA','php/deleteUser.php','</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22card-footer\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<h5\x20class=\x22fw-bold\x22>Comments</h5>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22comment-list\x22>\x0a\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22input-group\x20mt-3\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<input\x20class=\x22form-control\x22\x20type=\x22text\x22\x20placeholder=\x22Write\x20a\x20comment...\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20value=\x22','#nav-users','php/writeComment.php','classList','php/getAllPosts.php','index.html','9170PCyEry','</span><br>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22fs-6\x22>','391970dvrULx','#create-user-name','keydown','forEach','add','php/logout.php','replace','ajax','411900pHDTJu','#forum-section','.edit-user','#complaints-table','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>','583914mvEotA','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>','<div\x20class=\x22card\x20shadow\x20mt-2\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22card-body\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p\x20class=\x22lh-sm\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22fw-bold\x22>','target','Are\x20you\x20sure\x20you\x20want\x20to\x20delete\x20this\x20user?\x20All\x20data\x20including\x20comments\x20and\x20complains\x20associated\x20with\x20this\x20user\x20will\x20also\x20be\x20deleted.','#complaints-section','val','created_at','New\x20user\x20has\x20been\x20successfully\x20added.','.delete-user','#nav-forums','\x22\x20class=\x22delete-user\x20btn\x20btn-outline-success\x22><svg\x20xmlns=\x22http://www.w3.org/2000/svg\x22\x20width=\x2216\x22\x20height=\x2216\x22\x20fill=\x22currentColor\x22\x20class=\x22bi\x20bi-trash-fill\x22\x20viewBox=\x220\x200\x2016\x2016\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M2.5\x201a1\x201\x200\x200\x200-1\x201v1a1\x201\x200\x200\x200\x201\x201H3v9a2\x202\x200\x200\x200\x202\x202h6a2\x202\x200\x200\x200\x202-2V4h.5a1\x201\x200\x200\x200\x201-1V2a1\x201\x200\x200\x200-1-1H10a1\x201\x200\x200\x200-1-1H7a1\x201\x200\x200\x200-1\x201H2.5zm3\x204a.5.5\x200\x200\x201\x20.5.5v7a.5.5\x200\x200\x201-1\x200v-7a.5.5\x200\x200\x201\x20.5-.5zM8\x205a.5.5\x200\x200\x201\x20.5.5v7a.5.5\x200\x200\x201-1\x200v-7A.5.5\x200\x200\x201\x208\x205zm3\x20.5v7a.5.5\x200\x200\x201-1\x200v-7a.5.5\x200\x200\x201\x201\x200z\x22/>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</svg>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>','27jwsKqw','2607ZEKiRD','2kfImsf','<tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>','\x22\x20class=\x22edit-user\x20btn\x20btn-outline-success\x22><svg\x20xmlns=\x22http://www.w3.org/2000/svg\x22\x20width=\x2216\x22\x20height=\x2216\x22\x20fill=\x22currentColor\x22\x20class=\x22bi\x20bi-pencil-square\x22\x20viewBox=\x220\x200\x2016\x2016\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M15.502\x201.94a.5.5\x200\x200\x201\x200\x20.706L14.459\x203.69l-2-2L13.502.646a.5.5\x200\x200\x201\x20.707\x200l1.293\x201.293zm-1.75\x202.456-2-2L4.939\x209.21a.5.5\x200\x200\x200-.121.196l-.805\x202.414a.25.25\x200\x200\x200\x20.316.316l2.414-.805a.5.5\x200\x200\x200\x20.196-.12l6.813-6.814z\x22/>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20fill-rule=\x22evenodd\x22\x20d=\x22M1\x2013.5A1.5\x201.5\x200\x200\x200\x202.5\x2015h11a1.5\x201.5\x200\x200\x200\x201.5-1.5v-6a.5.5\x200\x200\x200-1\x200v6a.5.5\x200\x200\x201-.5.5h-11a.5.5\x200\x200\x201-.5-.5v-11a.5.5\x200\x200\x201\x20.5-.5H9a.5.5\x200\x200\x200\x200-1H2.5A1.5\x201.5\x200\x200\x200\x201\x202.5v11z\x22/>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</svg>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20value=\x22','<div\x20class=\x22post\x20card\x20shadow\x20col-md-6\x20mx-auto\x20mt-1\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22card-body\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22d-flex\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<img\x20src=\x22','text','Email\x20already\x20exists','\x22\x20class=\x22edit-user\x20btn\x20btn-outline-success\x22><svg\x20xmlns=\x22http://www.w3.org/2000/svg\x22\x20width=\x2216\x22\x20height=\x2216\x22\x20fill=\x22currentColor\x22\x20class=\x22bi\x20bi-pencil-square\x22\x20viewBox=\x220\x200\x2016\x2016\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M15.502\x201.94a.5.5\x200\x200\x201\x200\x20.706L14.459\x203.69l-2-2L13.502.646a.5.5\x200\x200\x201\x20.707\x200l1.293\x201.293zm-1.75\x202.456-2-2L4.939\x209.21a.5.5\x200\x200\x200-.121.196l-.805\x202.414a.25.25\x200\x200\x200\x20.316.316l2.414-.805a.5.5\x200\x200\x200\x20.196-.12l6.813-6.814z\x22/>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20fill-rule=\x22evenodd\x22\x20d=\x22M1\x2013.5A1.5\x201.5\x200\x200\x200\x202.5\x2015h11a1.5\x201.5\x200\x200\x200\x201.5-1.5v-6a.5.5\x200\x200\x200-1\x200v6a.5.5\x200\x200\x201-.5.5h-11a.5.5\x200\x200\x201-.5-.5v-11a.5.5\x200\x200\x201\x20.5-.5H9a.5.5\x200\x200\x200\x200-1H2.5A1.5\x201.5\x200\x200\x200\x201\x202.5v11z\x22/>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</svg>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20value=\x22','\x22\x20class=\x22write-comment-btn\x20btn\x20btn-outline-success\x22><svg\x20xmlns=\x22http://www.w3.org/2000/svg\x22\x20width=\x2216\x22\x20height=\x2216\x22\x20fill=\x22currentColor\x22\x20class=\x22bi\x20bi-send-fill\x22\x20viewBox=\x220\x200\x2016\x2016\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M15.964.686a.5.5\x200\x200\x200-.65-.65L.767\x205.855H.766l-.452.18a.5.5\x200\x200\x200-.082.887l.41.26.001.002\x204.995\x203.178\x203.178\x204.995.002.002.26.41a.5.5\x200\x200\x200\x20.886-.083l6-15Zm-1.833\x201.89L6.637\x2010.07l-.215-.338a.5.5\x200\x200\x200-.154-.154l-.338-.215\x207.494-7.494\x201.178-.471-.47\x201.178Z\x22/>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</svg></button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>','student_name','Post\x20has\x20been\x20removed.','</span></span><br>','children','#logout','complaint','\x22\x20class=\x22delete-user\x20btn\x20btn-outline-success\x22><svg\x20xmlns=\x22http://www.w3.org/2000/svg\x22\x20width=\x2216\x22\x20height=\x2216\x22\x20fill=\x22currentColor\x22\x20class=\x22bi\x20bi-trash-fill\x22\x20viewBox=\x220\x200\x2016\x2016\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M2.5\x201a1\x201\x200\x200\x200-1\x201v1a1\x201\x200\x200\x200\x201\x201H3v9a2\x202\x200\x200\x200\x202\x202h6a2\x202\x200\x200\x200\x202-2V4h.5a1\x201\x200\x200\x200\x201-1V2a1\x201\x200\x200\x200-1-1H10a1\x201\x200\x200\x200-1-1H7a1\x201\x200\x200\x200-1\x201H2.5zm3\x204a.5.5\x200\x200\x201\x20.5.5v7a.5.5\x200\x200\x201-1\x200v-7a.5.5\x200\x200\x201\x20.5-.5zM8\x205a.5.5\x200\x200\x201\x20.5.5v7a.5.5\x200\x200\x201-1\x200v-7A.5.5\x200\x200\x201\x208\x205zm3\x20.5v7a.5.5\x200\x200\x201-1\x200v-7a.5.5\x200\x200\x201\x201\x200z\x22/>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</svg>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>','email','.delete-post','354280EWkPBh','log','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22dropdown\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22btn\x20btn-outline-success\x20dropdown-toggle\x22\x20data-bs-toggle=\x22dropdown\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20Take\x20Action\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<ul\x20class=\x22dropdown-menu\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<li>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20value=\x22','.comment-list','location','each','8cuqTQJ','profile_picture','observe','\x22\x20class=\x22delete-post\x20btn\x20btn-outline-success\x20ms-auto\x20my-2\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<svg\x20xmlns=\x22http://www.w3.org/2000/svg\x22\x20width=\x2216\x22\x20height=\x2216\x22\x20fill=\x22currentColor\x22\x20class=\x22bi\x20bi-trash-fill\x22\x20viewBox=\x220\x200\x2016\x2016\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M2.5\x201a1\x201\x200\x200\x200-1\x201v1a1\x201\x200\x200\x200\x201\x201H3v9a2\x202\x200\x200\x200\x202\x202h6a2\x202\x200\x200\x200\x202-2V4h.5a1\x201\x200\x200\x200\x201-1V2a1\x201\x200\x200\x200-1-1H10a1\x201\x200\x200\x200-1-1H7a1\x201\x200\x200\x200-1\x201H2.5zm3\x204a.5.5\x200\x200\x201\x20.5.5v7a.5.5\x200\x200\x201-1\x200v-7a.5.5\x200\x200\x201\x20.5-.5zM8\x205a.5.5\x200\x200\x201\x20.5.5v7a.5.5\x200\x200\x201-1\x200v-7A.5.5\x200\x200\x201\x208\x205zm3\x20.5v7a.5.5\x200\x200\x201-1\x200v-7a.5.5\x200\x200\x201\x201\x200z\x22/>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</svg>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p\x20class=\x22fs-2\x22>','</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20value=\x22','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20value=\x22','#announcement-section','ACKNOWLEDGED','\x22\x20class=\x22acknowledge\x20dropdown-item\x20btn\x20btn-success\x22>Acknowledge</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</li>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</ul>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>','php/updateComplaintStatus.php','email\x20exists','GET','php/getAllComplaints.php','<div\x20class=\x22card\x20shadow\x20col-md-6\x20mx-auto\x20mt-1\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22card-body\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22d-flex\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<img\x20src=\x22images/071312_pidol4.webp\x22\x20class=\x22img-fluid\x22\x20style=\x22height:50px;width:50px;border-radius:100%\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22ms-3\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p\x20class=\x22lh-sm\x22><span\x20class=\x22fw-bold\x20fs-4\x22>','#create-user-type','ready','This\x20complaint\x20has\x20already\x20been\x20acknowledged.','php/getAllUsers.php','append','is-invalid','</td></tr>','parse','#create-topic-title','#posts','status','#create-post-btn','7WDjkiL','php/deletePost.php','php/createUser.php','#announcement','show'];_0x574a=function(){return _0x30bf2b;};return _0x574a();}function _0x33df(_0x16e4ad,_0x17beaf){var _0x574afc=_0x574a();return _0x33df=function(_0x33dfdd,_0x1656e5){_0x33dfdd=_0x33dfdd-0x170;var _0x3df6fc=_0x574afc[_0x33dfdd];return _0x3df6fc;},_0x33df(_0x16e4ad,_0x17beaf);}var _0x26f570=_0x33df;(function(_0x5e27cd,_0x4f0119){var _0x3430d5=_0x33df,_0x314ea6=_0x5e27cd();while(!![]){try{var _0x490275=-parseInt(_0x3430d5(0x182))/0x1*(parseInt(_0x3430d5(0x1a7))/0x2)+parseInt(_0x3430d5(0x194))/0x3*(parseInt(_0x3430d5(0x1bf))/0x4)+-parseInt(_0x3430d5(0x18c))/0x5+parseInt(_0x3430d5(0x199))/0x6*(-parseInt(_0x3430d5(0x1d9))/0x7)+parseInt(_0x3430d5(0x1b9))/0x8*(parseInt(_0x3430d5(0x1a5))/0x9)+parseInt(_0x3430d5(0x18a))/0xa*(parseInt(_0x3430d5(0x1a6))/0xb)+-parseInt(_0x3430d5(0x1e1))/0xc*(parseInt(_0x3430d5(0x1e6))/0xd);if(_0x490275===_0x4f0119)break;else _0x314ea6['push'](_0x314ea6['shift']());}catch(_0xadb4f3){_0x314ea6['push'](_0x314ea6['shift']());}}}(_0x574a,0x23e04),session());function session(){var _0x109d9f=_0x33df;$[_0x109d9f(0x193)]({'type':_0x109d9f(0x1ca),'url':'php/adminSession.php','success':function(_0x4a0606){var _0x4dc296=_0x109d9f;_0x4a0606==_0x4dc296(0x189)&&window[_0x4dc296(0x1bd)][_0x4dc296(0x192)](_0x4a0606);}});}$(document)[_0x26f570(0x1ce)](function(){var _0x2066a9=_0x26f570,_0x3109e3=0x0,_0x1cc08e=$(_0x2066a9(0x197)),_0x1c061f=$(_0x2066a9(0x17a)),_0x228172=$(_0x2066a9(0x1e5)),_0x37b2be=$(_0x2066a9(0x178)),_0x2a9794=$(_0x2066a9(0x18d)),_0x12543e=$('#users-section'),_0x4a04a7=$(_0x2066a9(0x195)),_0x23ad43=$(_0x2066a9(0x19e)),_0x5f348e=$('#nav-complaints'),_0x58de4f=$(_0x2066a9(0x185)),_0x452178=$(_0x2066a9(0x1a3)),_0x5aa9ee=$(_0x2066a9(0x1d8)),_0x35d354=$(_0x2066a9(0x1d5)),_0x28989a=$(_0x2066a9(0x1ea)),_0x4c3e5b=$(_0x2066a9(0x1d6)),_0x2d8d39=0x0,_0xea7a58=$(_0x2066a9(0x1cd)),_0x1ee29b=$(_0x2066a9(0x1e3)),_0x14512b=$(_0x2066a9(0x1c5)),_0x4d6be8=$('#subject'),_0x489ef4=$('#post-announcement-btn'),_0x16a756=$(_0x2066a9(0x1dc)),_0x5df322=$(_0x2066a9(0x1df)),_0x1edfc0=$(_0x2066a9(0x1b4));_0x4a479d(),_0x47d7b0(),_0x2a2045(),_0x5855d8(),_0x438af6(),_0x40e950(),_0x26dc9e(),_0x12543e[_0x2066a9(0x1dd)](),_0x4a04a7[_0x2066a9(0x181)](),_0x23ad43[_0x2066a9(0x181)](),_0x58de4f[_0x2066a9(0x17c)]('active'),_0x452178[_0x2066a9(0x171)]('active'),_0x14512b[_0x2066a9(0x181)]();function _0x30e12f(){var _0x67e80a=_0x2066a9;_0x1cc08e[_0x67e80a(0x1b3)]()[_0x67e80a(0x1e8)](),$['ajax']({'type':'GET','url':_0x67e80a(0x1cb),'success':function(_0x254a93){var _0x5b6713=_0x67e80a,_0x389dec=JSON[_0x5b6713(0x1d4)](_0x254a93);$(_0x389dec)['each'](function(_0x338b00,_0x170554){var _0x5a4214=_0x5b6713;_0x1cc08e['append'](_0x5a4214(0x1a8)+_0x170554[_0x5a4214(0x1b0)]+_0x5a4214(0x198)+_0x170554[_0x5a4214(0x1b5)]+_0x5a4214(0x198)+_0x170554[_0x5a4214(0x174)]+_0x5a4214(0x198)+_0x170554[_0x5a4214(0x1d7)]+_0x5a4214(0x1bb)+_0x170554['id']+_0x5a4214(0x1c7));});var _0x1731f5=$('.acknowledge');_0x1731f5['on'](_0x5b6713(0x1e9),function(){var _0x52f9e8=_0x5b6713,_0x9b57a5=$(this)[_0x52f9e8(0x1e2)]()[_0x52f9e8(0x1e2)]()['parent']()[_0x52f9e8(0x1e2)]()[_0x52f9e8(0x1e2)]()[_0x52f9e8(0x1b3)]()['eq'](0x3);_0x9b57a5['text']()==_0x52f9e8(0x1c6)?alert(_0x52f9e8(0x1cf)):confirm(_0x52f9e8(0x179))==!![]&&(_0x3109e3=$(this)[_0x52f9e8(0x19f)](),_0x40871d(_0x3109e3,_0x9b57a5));});}});}function _0x40871d(_0x1b8d82,_0x2025c3){var _0x5f001f=_0x2066a9;$[_0x5f001f(0x193)]({'type':_0x5f001f(0x17e),'url':_0x5f001f(0x1c8),'data':{'complaint_id':_0x3109e3},'success':function(_0x56e604){var _0x539508=_0x5f001f;_0x56e604=='ok'&&_0x2025c3[_0x539508(0x1ab)](_0x539508(0x1c6));}});}function _0x26dc9e(){var _0x2d8877=_0x2066a9;_0x1edfc0['on'](_0x2d8877(0x1e9),function(){var _0x32c2a1=_0x2d8877;$['get'](_0x32c2a1(0x191),function(_0x22e57a){var _0x50ce60=_0x32c2a1;window[_0x50ce60(0x1bd)]['replace'](_0x22e57a);});});}function _0x40e950(){$['get']('php/getAnnouncements.php',function(_0x1e656e){var _0x70515f=_0x33df,_0x2f0c90=JSON[_0x70515f(0x1d4)](_0x1e656e);$(_0x2f0c90)[_0x70515f(0x1be)](function(_0x13d2e1,_0x1bd2af){var _0x25a86a=_0x70515f;_0x5df322[_0x25a86a(0x1d1)](_0x25a86a(0x180)+_0x1bd2af[_0x25a86a(0x1e7)]+_0x25a86a(0x175)+_0x1bd2af[_0x25a86a(0x1a0)]+'</td></tr>');});});}function _0x4a479d(){var _0xccb6c4=_0x2066a9;_0x489ef4['on'](_0xccb6c4(0x1e9),function(){var _0x253e99=_0xccb6c4;if(_0x4d6be8['val']()=='')_0x4d6be8[_0x253e99(0x17c)](_0x253e99(0x1d2));else _0x16a756[_0x253e99(0x19f)]()==''?_0x16a756[_0x253e99(0x17c)](_0x253e99(0x1d2)):$[_0x253e99(0x193)]({'type':'POST','url':_0x253e99(0x170),'data':{'title':_0x4d6be8[_0x253e99(0x19f)](),'description':_0x16a756[_0x253e99(0x19f)]()},'success':function(_0x2eede8){var _0x548923=_0x253e99,_0x2ea630=JSON[_0x548923(0x1d4)](_0x2eede8);_0x5df322['append']('<tr><td>'+_0x2ea630[_0x548923(0x1e7)]+_0x548923(0x175)+_0x2ea630[_0x548923(0x1a0)]+_0x548923(0x1d3)),_0x4d6be8[_0x548923(0x19f)](''),_0x16a756['val']('');}});});}function _0x4b2e83(_0x2b0e7f,_0x4511ab,_0x13feb5){var _0x1b0ded=_0x2066a9;$[_0x1b0ded(0x193)]({'type':_0x1b0ded(0x17e),'url':_0x1b0ded(0x1de),'data':{'post_id':_0x2b0e7f},'success':function(_0x34fc98){var _0x5d1f6b=_0x1b0ded;console[_0x5d1f6b(0x1ba)](_0x13feb5);var _0x38e98c=JSON[_0x5d1f6b(0x1d4)](_0x34fc98);$(_0x38e98c)['each'](function(_0x320afe,_0x29d419){var _0x431c1b=_0x5d1f6b;_0x4511ab['eq'](_0x13feb5)['append'](_0x431c1b(0x19b)+_0x29d419[_0x431c1b(0x176)]+_0x431c1b(0x18b)+_0x29d419[_0x431c1b(0x17b)]+_0x431c1b(0x19a));});}});}function _0x103ffa(_0xbfeeaf,_0x193cd1){var _0x198028=_0x2066a9;_0xbfeeaf[_0x198028(0x19f)]()!=''&&$['ajax']({'type':_0x198028(0x17e),'url':_0x198028(0x186),'data':{'comment':_0xbfeeaf[_0x198028(0x19f)](),'post_id':_0x193cd1[_0x198028(0x19f)]()},'success':function(_0x321bb8){var _0x19c435=_0x198028;_0x193cd1[_0x19c435(0x1e2)]()['parent']()[_0x19c435(0x1b3)]()['eq'](0x1)[_0x19c435(0x1d1)]();}});}function _0x2a9b5f(){var _0x20c655=_0x2066a9;$[_0x20c655(0x193)]({'type':_0x20c655(0x1ca),'url':_0x20c655(0x188),'success':function(_0x2633eb){var _0x199cc2=_0x20c655;if(_0x2633eb=='index.html')window[_0x199cc2(0x1bd)][_0x199cc2(0x192)](_0x2633eb);else{var _0x3d8e67=JSON[_0x199cc2(0x1d4)](_0x2633eb);$(_0x3d8e67)['each'](function(_0x488e5a,_0x5ce3e0){var _0x22114d=_0x199cc2;_0x4c3e5b['append'](_0x22114d(0x1aa)+_0x5ce3e0[_0x22114d(0x1c0)]+'\x22\x20class=\x22img-fluid\x22\x20style=\x22height:50px;width:50px;border-radius:100%\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22ms-3\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p\x20class=\x22lh-sm\x22><span\x20class=\x22fw-bold\x20fs-4\x22>'+_0x5ce3e0[_0x22114d(0x176)]+_0x22114d(0x1b2)+_0x5ce3e0['date']+_0x22114d(0x1c3)+_0x5ce3e0[_0x22114d(0x1e0)]+_0x22114d(0x1c2)+_0x5ce3e0[_0x22114d(0x1e7)]+'</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22card-footer\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<h5\x20class=\x22fw-bold\x22>Comments</h5>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22comment-list\x22>\x0a\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22input-group\x20mt-3\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<input\x20class=\x22form-control\x22\x20type=\x22text\x22\x20placeholder=\x22Write\x20a\x20comment...\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20value=\x22'+_0x5ce3e0['post_id']+_0x22114d(0x1ae));var _0x581ab0=$(_0x22114d(0x1bc));_0x4b2e83(_0x5ce3e0['post_id'],_0x581ab0,_0x488e5a);});var _0x235c1b=$('.write-comment-btn');_0x235c1b['on'](_0x199cc2(0x1e9),function(){var _0x4b6690=_0x199cc2,_0x3d17bb=$(this)[_0x4b6690(0x1e2)]()[_0x4b6690(0x1b3)]()['eq'](0x0);_0x103ffa(_0x3d17bb,$(this));});const _0x217f2f=new IntersectionObserver(_0x1dc225=>{var _0x26cb3c=_0x199cc2;_0x1dc225[_0x26cb3c(0x18f)](_0x56cfb5=>{var _0xb440ce=_0x26cb3c;if(_0x56cfb5['isIntersecting']){_0x56cfb5['target']['classList'][_0xb440ce(0x190)]('ease-in');return;}_0x56cfb5[_0xb440ce(0x19c)][_0xb440ce(0x187)]['remove']('ease-in');});});document[_0x199cc2(0x1e4)]('.post')[_0x199cc2(0x18f)](function _0xef7528(_0x2473f0,_0x58ffc9){var _0x5ad982=_0x199cc2;_0x217f2f[_0x5ad982(0x1c1)](document['querySelectorAll'](_0x5ad982(0x173))[_0x58ffc9]);});var _0x3f6f43=$('.delete-post');_0x3f6f43['on'](_0x199cc2(0x1e9),function(){var _0x23654c=$(this);_0x3e0c7d(_0x23654c);});}}});}function _0x3e0c7d(_0x354a35){var _0x2d0219=_0x2066a9;$[_0x2d0219(0x193)]({'type':'POST','url':_0x2d0219(0x1da),'data':{'post_id':_0x354a35[_0x2d0219(0x19f)]()},'success':function(_0x554e5){var _0x5ee29e=_0x2d0219;_0x554e5==_0x5ee29e(0x189)?window[_0x5ee29e(0x1bd)][_0x5ee29e(0x192)](_0x554e5):(_0x354a35[_0x5ee29e(0x1e2)]()[_0x5ee29e(0x1e2)]()[_0x5ee29e(0x1e2)]()[_0x5ee29e(0x1e8)](),alert(_0x5ee29e(0x1b1)));}});}function _0x47d7b0(){var _0x42c380=_0x2066a9;_0x35d354['on'](_0x42c380(0x18e),function(){var _0x192c3c=_0x42c380;$(this)['removeClass'](_0x192c3c(0x1d2));}),_0x28989a['on'](_0x42c380(0x18e),function(){var _0x596451=_0x42c380;$(this)['removeClass'](_0x596451(0x1d2));}),_0x5aa9ee['on']('click',function(){var _0x224918=_0x42c380;if(_0x28989a[_0x224918(0x19f)]()=='')_0x28989a['addClass']('is-invalid');else _0x35d354[_0x224918(0x19f)]()==''?_0x35d354['addClass'](_0x224918(0x1d2)):$['ajax']({'type':'POST','url':'php/createTopic.php','data':{'title':_0x35d354[_0x224918(0x19f)](),'description':_0x28989a[_0x224918(0x19f)]()},'success':function(_0x921911){var _0xf17ba1=_0x224918;console[_0xf17ba1(0x1ba)](_0x921911),_0x35d354[_0xf17ba1(0x19f)](''),_0x28989a[_0xf17ba1(0x19f)]('');var _0x4d8651=JSON[_0xf17ba1(0x1d4)](_0x921911);_0x4c3e5b['prepend'](_0xf17ba1(0x1cc)+_0x4d8651[_0xf17ba1(0x176)]+_0xf17ba1(0x1b2)+_0x4d8651[_0xf17ba1(0x174)]+'</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20value=\x22'+_0x4d8651[_0xf17ba1(0x1e0)]+_0xf17ba1(0x1c2)+_0x4d8651[_0xf17ba1(0x1e7)]+_0xf17ba1(0x184)+_0x4d8651[_0xf17ba1(0x1e0)]+_0xf17ba1(0x1ae));var _0x16536b=$(_0xf17ba1(0x1b8));_0x16536b['on'](_0xf17ba1(0x1e9),function(){var _0x2b0e33=$(this);_0x3e0c7d(_0x2b0e33);});}});});}function _0x438af6(){var _0x5d33c9=_0x2066a9;_0x58de4f['on'](_0x5d33c9(0x1e9),function(){var _0x5cb023=_0x5d33c9;$(_0x5cb023(0x17f))[_0x5cb023(0x171)](_0x5cb023(0x177)),$(this)['addClass'](_0x5cb023(0x177)),_0x12543e[_0x5cb023(0x1dd)](),_0x4a04a7[_0x5cb023(0x181)](),_0x23ad43[_0x5cb023(0x181)](),_0x14512b['hide']();}),_0x452178['on'](_0x5d33c9(0x1e9),function(){var _0xc4fe6e=_0x5d33c9;$(_0xc4fe6e(0x17f))[_0xc4fe6e(0x171)](_0xc4fe6e(0x177)),$(this)['addClass']('active'),_0x4a04a7[_0xc4fe6e(0x1dd)](),_0x4c3e5b[_0xc4fe6e(0x1b3)]()['remove'](),_0x2a9b5f(),_0x12543e[_0xc4fe6e(0x181)](),_0x14512b['hide'](),_0x23ad43[_0xc4fe6e(0x181)]();}),_0x1ee29b['on']('click',function(){var _0x1db72f=_0x5d33c9;$(_0x1db72f(0x17f))[_0x1db72f(0x171)]('active'),$(this)['addClass']('active'),_0x4a04a7[_0x1db72f(0x181)](),_0x12543e[_0x1db72f(0x181)](),_0x14512b[_0x1db72f(0x1dd)](),_0x23ad43[_0x1db72f(0x181)]();}),_0x5f348e['on'](_0x5d33c9(0x1e9),function(){var _0x223229=_0x5d33c9;$('.nav-link')[_0x223229(0x171)](_0x223229(0x177)),$(this)['addClass'](_0x223229(0x177)),_0x4a04a7[_0x223229(0x181)](),_0x12543e[_0x223229(0x181)](),_0x14512b['hide'](),_0x23ad43[_0x223229(0x1dd)](),_0x30e12f();});}function _0x5855d8(){var _0x560449=_0x2066a9;$[_0x560449(0x193)]({'type':'GET','url':_0x560449(0x1d0),'success':function(_0x1efc79){var _0x58b35f=_0x560449,_0x4ed56f=JSON[_0x58b35f(0x1d4)](_0x1efc79);$(_0x4ed56f)[_0x58b35f(0x1be)](function(_0xed36f1,_0x3c9ddf){var _0x54ab93=_0x58b35f;_0x37b2be['append'](_0x54ab93(0x17d)+_0x3c9ddf['name']+_0x54ab93(0x172)+_0x3c9ddf[_0x54ab93(0x1b7)]+_0x54ab93(0x1c4)+_0x3c9ddf['id']+_0x54ab93(0x1ad)+_0x3c9ddf['id']+_0x54ab93(0x1b6));});var _0x630d9a=$(_0x58b35f(0x196)),_0x5cdd96=$(_0x58b35f(0x1a2));_0x5cdd96['on'](_0x58b35f(0x1e9),function(){var _0x90cbc2=_0x58b35f,_0x9015bf=$(this);confirm(_0x90cbc2(0x19d))==!![]&&$[_0x90cbc2(0x193)]({'type':_0x90cbc2(0x17e),'url':_0x90cbc2(0x183),'data':{'user_id':_0x9015bf[_0x90cbc2(0x19f)]()},'success':function(_0x16b5da){var _0x28e92c=_0x90cbc2;_0x16b5da=='ok'&&_0x9015bf[_0x28e92c(0x1e2)]()[_0x28e92c(0x1e2)]()[_0x28e92c(0x1e8)]();}});});}});}function _0x2a2045(){var _0xc2c833=_0x2066a9;_0x1c061f['on'](_0xc2c833(0x18e),function(){var _0x5e4536=_0xc2c833;_0x1c061f[_0x5e4536(0x171)]('is-invalid');}),_0x2a9794['on'](_0xc2c833(0x18e),function(){var _0x12ac4a=_0xc2c833;_0x2a9794[_0x12ac4a(0x171)]('is-invalid');}),_0x228172['on']('click',function(){var _0x521a0e=_0xc2c833;if(_0x1c061f[_0x521a0e(0x19f)]()=='')_0x1c061f[_0x521a0e(0x17c)]('is-invalid');else _0x2a9794['val']()==''?_0x2a9794['addClass'](_0x521a0e(0x1d2)):(_0x1c061f[_0x521a0e(0x171)](_0x521a0e(0x1d2)),$[_0x521a0e(0x193)]({'type':'POST','url':_0x521a0e(0x1db),'data':{'email':_0x1c061f['val'](),'name':_0x2a9794[_0x521a0e(0x19f)](),'user_type':_0xea7a58['val']()},'success':function(_0x2aad6a){var _0x3577ed=_0x521a0e;if(_0x2aad6a!=_0x3577ed(0x1c9)){_0x1c061f['val'](''),_0x2a9794[_0x3577ed(0x19f)]('');var _0x43d42c=JSON['parse'](_0x2aad6a);$(_0x43d42c)[_0x3577ed(0x1be)](function(_0x1bf256,_0x403338){var _0x4bb520=_0x3577ed;_0x37b2be[_0x4bb520(0x1d1)]('<tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+_0x403338['name']+_0x4bb520(0x1af)+_0x403338['email']+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20value=\x22'+_0x403338['id']+_0x4bb520(0x1a9)+_0x403338['id']+_0x4bb520(0x1a4));}),alert(_0x3577ed(0x1a1));var _0x2952e4=$(_0x3577ed(0x196)),_0x2880aa=$(_0x3577ed(0x1a2));_0x2880aa['on'](_0x3577ed(0x1e9),function(){var _0x4d5b8b=_0x3577ed,_0x35bdae=$(this);confirm(_0x4d5b8b(0x19d))==!![]&&$[_0x4d5b8b(0x193)]({'type':_0x4d5b8b(0x17e),'url':'php/deleteUser.php','data':{'user_id':_0x35bdae[_0x4d5b8b(0x19f)]()},'success':function(_0x23650c){var _0x19ca41=_0x4d5b8b;_0x23650c=='ok'&&_0x35bdae['parent']()[_0x19ca41(0x1e2)]()['remove']();}});});}else alert(_0x3577ed(0x1ac));}}));});}});
     </script>
     <title>Document</title>
 </head>

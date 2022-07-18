@@ -1,5 +1,7 @@
 <?php
     session_start();
-    session_unset();
+    if(isset($_SESSION['admin_id'])){
+        session_unset();
+    }
     echo 'index.html';
 ?>
