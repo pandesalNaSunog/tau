@@ -46,4 +46,26 @@ class AuthController extends Controller
 
         return response($user, 200);
     }
+
+    public function updateProfilePicture(Request $request){
+        $request->validate([
+            'image' => 'required',
+        ]);
+
+        $filepath = uniqid().".jpg";
+        file_put_contents($filepath, base64_decode($request['image']));
+
+        $token = PersonalAccessToken::findToken($request->bearerToken());
+        $id = $token->tokenable->id;
+
+        $user = User::where('id', $id)->first();
+
+        $user->update([
+            'profile_picture' => '../../tauApi/public/'.$filepath,
+        ]);
+
+        return response([
+            'profile_picture' => $user->profile_picture
+        ], 200);
+    }
 }

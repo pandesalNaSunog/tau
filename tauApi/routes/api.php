@@ -26,4 +26,5 @@ Route::group(['middleware' => ['auth:sanctum']], function(){
     Route::post('/conversation', [MessageController::class, 'getConversation']);
     Route::get('/users-to-message', [MessageController::class, 'getUsers']);
     Route::post('/send-message', [MessageController::class, 'sendMessage']);
+    Route::post('/update-profile-picture', [AuthController::class, 'updateProfilePicture']);
 });
