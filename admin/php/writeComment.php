@@ -14,8 +14,21 @@
             $query = "SELECT * FROM comments WHERE id = LAST_INSERT_ID()";
             $comment = $con->query($query) or die($con->error);
             $row = $comment->fetch_assoc();
+            $userId = $row['user_id'];
 
-            echo json_encode($row);
+            $query = "SELECT * FROM users WHERE id = '$userId'";
+            $user = $con->query($query) or die($con->error);
+
+            $userRow = $user->fetch_assoc();
+
+            $name = $userRow['name'];
+            $comment = $row['comment'];
+
+            $response = array(
+                'name' => $name,
+                'comment' => $comment
+            );
+            echo json_encode($response);
         }else{
             echo 'index.html';
         }
