@@ -1,5 +1,7 @@
 <?php
     if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'){
+        include('connection.php');
+        $con = connect();
         if(isset($_POST['announcement_id'])){
             $id = $_POST['announcement_id'];
 
