@@ -36,6 +36,8 @@ $(document).ready(function(){
             var navigationLink = $('.navigation-link');
             var announcmentSection = $('#announcment-section');
             var announcementTable = $('#announcement-table');
+            var latestAnnouncement = $('#latest-announcement');
+            var latestAnnouncementDate = $('#latest-announcement-date');
             navigationLink.on('click', function(){
                 navigationLink.removeClass('navigation-is-active');
                 $(this).addClass('navigation-is-active');
@@ -317,7 +319,13 @@ $(document).ready(function(){
                     success: function(response){
                         var data = JSON.parse(response);
                         $(data).each(function(index, value){
-                            announcementTable.append(`<tr><td>${value.announcement}</td><td>${value.date}</td></tr>`)
+                            if(index != 0){
+                                announcementTable.append(`<tr><td>${value.announcement}</td><td>${value.date}</td></tr>`)
+                            }else{
+                                latestAnnouncement.text(value.announcement)
+                                latestAnnouncementDate.text(value.date)
+                            }
+                            
                         })
                     }
                 })
