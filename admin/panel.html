@@ -217,9 +217,10 @@
                                 announcement_id: globalAnnouncementId,
                             },
                             success: function(response){
-                                if(response == 'ok'){
-                                    thisDeleteAnnouncement.parent().parent().remove();
-                                }
+                                // if(response == 'ok'){
+                                //     thisDeleteAnnouncement.parent().parent().remove();
+                                // }
+                                console.log(response);
                             }
                         })
                     }
