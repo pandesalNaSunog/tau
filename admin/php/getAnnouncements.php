@@ -7,13 +7,13 @@
         
         if(isset($_GET) && isset($_SESSION['admin_id'])){
             $query = "SELECT * FROM announcements ORDER BY id DESC";
-            $announcement = $con->query($query) or die($con->error);
+            $an = $con->query($query) or die($con->error);
             $data = array();
 
-            while($row = $announcement->fetch_assoc()){
+            while($row = $an->fetch_assoc()){
 
                 $date = date_create($row['created_at']);
-                $date = date_format($data, 'M d, Y h:i A');
+                $date = date_format($date, 'M d, Y h:i A');
 
                 $announcementId = $row['id'];
                 $announcement = $row['description'];

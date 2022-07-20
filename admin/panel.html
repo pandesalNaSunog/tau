@@ -148,6 +148,7 @@
             function getAnnouncements(){
                 $.get('php/getAnnouncements.php',function(data){
 
+
                     if(data != 'index.html'){
                         var parsed = JSON.parse(data);
                         $(parsed).each(function(index, value){
