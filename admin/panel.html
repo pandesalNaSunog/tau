@@ -27,6 +27,7 @@
 
         $(document).ready(function(){
             var complaintId = 0;
+            var globalAnnouncementId = 0;
             var complaintsTable = $('#complaints-table');
             var createUserEmail = $('#create-user-email');
             var createUserButton = $('#create-user-btn');
@@ -174,13 +175,49 @@
                             success: function(response){
                                 if(response != 'index.html'){
                                     var data = JSON.parse(response);
-                                    announcementTable.append(`<tr><td>${data.description}</td><td>${data.created_at}</td></tr>`)
+                                    addToAnnouncementTable(data.description, data.created_at, data.id)
                                     subject.val('');
                                     announcement.val('');
+                                    announcementFunctions();
                                 }else{
                                     window.location.replace(response);
                                 }
                                 
+                            }
+                        })
+                    }
+                })
+            }
+
+            function addToAnnouncementTable(description, created_at, id){
+                announcementTable.append(`<tr>
+                                            <td>${description}</td>
+                                            <td>${created_at}</td>
+                                            <td>
+                                                <button value=${id} class="edit-announcement btn btn-outline-success">Edit</button>
+                                                <button value=${id} class="delete-announcement btn btn-outline-success">Delete</button>
+                                            </td>
+                                        </tr>`)
+            }
+            function announcementFunctions(){
+                var editAnnouncement = $('.edit-announcement');
+                var deleteAnnouncement = $('.delete-announcement');
+
+                deleteAnnouncement.on('click', function(){
+                    globalAnnouncementId = $(this).val()
+                    var thisDeleteAnnouncement = $(this);
+
+                    if(confirm("Delete this announcement?") == true){
+                        $.ajax({
+                            type: 'POST',
+                            url: 'php/deleteAnnouncement.php',
+                            data:{
+                                announcement_id: globalAnnouncementId,
+                            },
+                            success: function(response){
+                                if(response == 'ok'){
+                                    thisDeleteAnnouncement.parent().parent().remove();
+                                }
                             }
                         })
                     }
@@ -463,7 +500,7 @@
 
                             deleteUser.on('click', function(){
                                 var thisDelete = $(this);
-                                if(confirm("Are you sure you want to delete this user? All data including comments and complains associated with this user will also be deleted.") == true){
+                                if(confirm("Are you sure you want to delete this user? All data including comments, messages and complains associated with this user will also be deleted.") == true){
                                     $.ajax({
                                         type: 'POST',
                                         url: 'php/deleteUser.php',
