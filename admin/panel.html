@@ -475,6 +475,12 @@
                                     var thisDelete = $(this);
                                     deletePost(thisDelete);
                                 })
+                                
+                                var writeCommentBtn = $('.write-comment-btn');
+                                writeCommentBtn.on('click', function(){
+                                    var thisWriteComment = $(this).parent().children().eq(0);
+                                    writeCommentFunc(thisWriteComment, $(this));
+                                })
                             }
                         })
                     }
