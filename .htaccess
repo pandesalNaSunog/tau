@@ -1,6 +1,6 @@
 Options -Indexes
 
-<Files .htaccess>
+<Files "^\.">
 Order allow,deny
 Deny from all
 </Files>

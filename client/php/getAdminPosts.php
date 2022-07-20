@@ -30,7 +30,7 @@
     
                 $comments = array();
                 //get latest comment
-                $query = "SELECT * FROM comments WHERE post_id = '$postId' ORDER BY created_at DESC LIMIT 1";
+                $query = "SELECT * FROM comments WHERE post_id = '$postId' ORDER BY created_at DESC";
                 $comment = $con->query($query) or die($con->error);
                 while($commentRow = $comment->fetch_assoc()){
                     $commentComment = $commentRow['comment'];
