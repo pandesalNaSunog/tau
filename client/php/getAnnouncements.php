@@ -4,7 +4,7 @@
         $con = connect();
 
         if(isset($_GET)){
-            $query = "SELECT * FROM announcements";
+            $query = "SELECT * FROM announcements ORDER BY id DESC";
             $announcement = $con->query($query) or die($con->error);
             $announcements = array();
 
