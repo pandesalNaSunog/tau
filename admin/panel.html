@@ -151,8 +151,10 @@
                     if(data != 'index.html'){
                         var parsed = JSON.parse(data);
                         $(parsed).each(function(index, value){
-                            announcementTable.append(`<tr><td>${value.description}</td><td>${value.created_at}</td></tr>`)
+                            addToAnnouncementTable(value.description,value.created_at,value.id);
                         })
+
+                        announcementFunctions();
                     }else{
                         window.location.replace(response);
                     }
