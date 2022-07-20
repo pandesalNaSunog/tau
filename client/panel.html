@@ -47,6 +47,8 @@ $(document).ready(function(){
             var navigationLink = $('.navigation-link');
             var announcmentSection = $('#announcment-section');
             var announcementTable = $('#announcement-table');
+            var latestAnnouncement = $('#latest-announcement');
+            var latestAnnouncementDate = $('#latest-announcement-date');
             navigationLink.on('click', function(){
                 navigationLink.removeClass('navigation-is-active');
                 $(this).addClass('navigation-is-active');
@@ -328,7 +330,13 @@ $(document).ready(function(){
                     success: function(response){
                         var data = JSON.parse(response);
                         $(data).each(function(index, value){
-                            announcementTable.append(`<tr><td>${value.announcement}</td><td>${value.date}</td></tr>`)
+                            if(index != 0){
+                                announcementTable.append(`<tr><td>${value.announcement}</td><td>${value.date}</td></tr>`)
+                            }else{
+                                latestAnnouncement.text(value.announcement)
+                                latestAnnouncementDate.text(value.date)
+                            }
+                            
                         })
                     }
                 })
@@ -522,11 +530,12 @@ $(document).ready(function(){
                     <h3 class="fw-bold">
                         Latest Announcement
                     </h3>
+                    
                 </div>
                 <div class="card-body">
-                    <h2 class="text-center py-5 fw-bold">
-                        Latest
+                    <h2 class="text-center py-5 fw-bold" id="latest-announcement">
                     </h2>
+                    <p><em id="latest-announcement-date"></em></p>
                 </div>
             </div>
             <div class="col-lg-5 card shadow mx-auto mt-5">
