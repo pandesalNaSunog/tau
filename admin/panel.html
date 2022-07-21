@@ -91,7 +91,7 @@
                             email: editProfileEmail.val(),
                             password: editProfilePassword.val(),
                         },
-                        success: function(){
+                        success: function(response){
                             if(response == 'ok'){
                                 alert('Account has been successfully updated.');
                             }else{
