@@ -1,5 +1,6 @@
 <?php
     if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'){
+        session_start();
         include('connection.php');
         $con = connect();
         if(isset($_POST) && isset($_SESSION['admin_id'])){
