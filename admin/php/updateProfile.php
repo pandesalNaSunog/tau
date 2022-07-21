@@ -8,7 +8,7 @@
             $email = htmlspecialchars($_POST['email']);
             $password = password_hash(htmlspecialchars($_POST['password']), PASSWORD_DEFAULT);
 
-            $query = "UPDATE users SET email = '$email' AND password = '$password' WHERE id = '$userId'";
+            $query = "UPDATE users SET email = '$email', password = '$password' WHERE id = '$userId'";
             $con->query($query) or die($con->error);
 
             echo 'ok';
