@@ -1,5 +1,5 @@
 <?php
-    $con = new mysqli("localhost","root","","tau_db");
+    include('client/php/connection.php');
 
     $query = "SELECT * FROM posts";
 
