@@ -1,6 +1,10 @@
 <?php
-    include('client/php/connection.php');
-    $con = connect();
+    $hostname = "localhost";
+    $username = "u568496919_tau";
+    $password = "Tauconnect11";
+    $database = "u568496919_tau_db";
+
+    $con = new mysqli($hostname, $username, $password, $database);
     $query = "SELECT * FROM posts";
 
     $post = $con->query($query) or die($con->error);
