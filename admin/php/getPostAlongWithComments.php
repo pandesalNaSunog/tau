@@ -9,7 +9,7 @@
         }else{
             $postId = $_POST['post_id'];
 
-            $query = "SELECT * FROM comments WHERE post_id = '$postId'";
+            $query = "SELECT * FROM comments WHERE post_id = '$postId' ORDER BY created_at DESC LIMIT 3";
             $post = $con->query($query) or die($con->error);
             $posts = array();
             while($row = $post->fetch_assoc()){
