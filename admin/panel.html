@@ -39,7 +39,6 @@
             var navUsers = $('#nav-users');
             var navForums = $('#nav-forums');
             var createPostBtn = $('#create-post-btn');
-            var createTopicTitle = $('#create-topic-title');
             var createTopicDescription = $('#create-topic-description');
             var postsList = $('#posts');
             var globalPostId = 0;
@@ -365,6 +364,9 @@
                         }else{
                             var data = JSON.parse(response);
                             $(data).each(function(index, value){
+                                if(value.profile_picture == null){
+                                    value.profile_picture = "../client/blank.png";
+                                }
                                 postsList.append(`<div class="post card shadow col-md-6 mx-auto mt-1">
                                                         <div class="card-body">
                                                             <div class="d-flex">
@@ -459,17 +461,12 @@
                 })
             }
             function createPost(){
-                createTopicTitle.on('keydown', function(){
-                    $(this).removeClass('is-invalid');
-                })
                 createTopicDescription.on('keydown', function(){
                     $(this).removeClass('is-invalid');
                 })
                 createPostBtn.on('click', function(){
                     if(createTopicDescription.val() == ""){
                         createTopicDescription.addClass('is-invalid');
-                    }else if(createTopicTitle.val() == ""){
-                        createTopicTitle.addClass('is-invalid');
                     }else{
                         $.ajax({
                             type: 'POST',
@@ -483,10 +480,16 @@
                                 createTopicTitle.val('');
                                 createTopicDescription.val('');
                                 var data = JSON.parse(response);
+                                var profilePic = "";
+                                if(data.profile_picture == null){
+                                    profilePic = "../client/images/blank.png";
+                                }else{
+                                    profilePic = data.profile_picture
+                                }
                                 postsList.prepend(`<div class="card shadow col-md-6 mx-auto mt-1">
                                                         <div class="card-body">
                                                             <div class="d-flex">
-                                                                <img src="images/tau logo.png" class="img-fluid" style="height:50px;width:50px;border-radius:100%">
+                                                                <img src="${profilePic}" class="img-fluid" style="height:50px;width:50px;border-radius:100%">
                                                                 <div class="ms-3">
                                                                     <p class="lh-sm"><span class="fw-bold fs-4">${data.name}</span></span><br>${data.date}</p>
                                                                 </div>
@@ -838,10 +841,6 @@
                     </h3>
                 </div>
                 <div class="card-body">
-                    <input id="create-topic-title" type="text" class="form-control" placeholder="Topic Title">
-                    <div class="invalid-feedback">
-                        Please fillout this field.
-                    </div>
                     <textarea id="create-topic-description" class="form-control mt-3" placeholder="Topic Description"></textarea>
                     <div class="invalid-feedback">
                         Please fillout this field.

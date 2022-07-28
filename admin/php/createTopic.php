@@ -8,7 +8,7 @@
         if(!isset($_SESSION['admin_id'])){
             echo 'index.html';
         }else{
-            $title = htmlspecialchars($_POST['title']);
+            $title = "Title";
             $description = htmlspecialchars($_POST['description']);
             $userId = $_SESSION['admin_id'];
 
@@ -24,16 +24,16 @@
 
             $data = $user->fetch_assoc();
             $name = $data['name'];
-
+            $profilePicture = $data['profile_picture'];
             $date = date_create($date);
             $formattedDate = date_format($date, 'M d, Y h:i A');
 
             echo json_encode(array(
-                'title' => $title,
                 'description' => $description,
                 'name' => $name,
                 'date' => $formattedDate,
-                'post_id' => $postRow['id']
+                'post_id' => $postRow['id'],
+                'profile_picture' => $profilePicture,
             ));
         }
     }else{
