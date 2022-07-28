@@ -320,6 +320,8 @@
                             alert('Invalid file. Please upload image files only.');
                         }else{
                             profilePicture.attr("src",response);
+                            imageUpload.val('');
+                            $('#upload-profile-picture-modal').modal('hide');
                         }
                     }
                 })
