@@ -474,7 +474,6 @@
                                 post_id: thisWriteCommentBtn.val()
                             },
                             success: function(response){
-                                ;
                                 if(response != 'index.html'){
                                     thisWriteComment.val('');
 
@@ -495,6 +494,9 @@
             }
 
             function addToPostListTwo(comments,profilePicture, name, date, description, postId){
+                if(profilePicture == null){
+                    profilePicture = "images/blank.png";
+                }
                 posts.prepend(`<div class="col-lg-6 mx-auto card mt-5 shadow rounded-3">
                                     <div class="card-body">
                                         <div class="d-flex">
