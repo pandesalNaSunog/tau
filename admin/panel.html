@@ -365,7 +365,7 @@
                             var data = JSON.parse(response);
                             $(data).each(function(index, value){
                                 if(value.profile_picture == null){
-                                    value.profile_picture = "../client/blank.png";
+                                    value.profile_picture = "../client/images/blank.png";
                                 }
                                 postsList.append(`<div class="post card shadow col-md-6 mx-auto mt-1">
                                                         <div class="card-body">
