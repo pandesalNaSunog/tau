@@ -16,7 +16,19 @@
             $getAnnouncement = $con->query($newquery) or die($con->error);
             $announcementRow = $getAnnouncement->fetch_assoc();
 
-            echo json_encode($announcementRow);
+
+            $userId = $announcementRow['user_id'];
+            $query = "SELECT * FROM users WHERE id = '$userId'";
+            $user = $con->query($query) or die($con->error);
+            $userRow = $user->fetch_assoc();
+            $name = $userRow['name'];
+            $date = date_format(date_create($announcementRow['created_at']), 'M d, Y h:i A');
+            $response = array(
+                'name' => $name,
+                'date' => $date,
+                'announcement' => $announcement
+            );
+            echo json_encode($response);
         }else{
             echo 0;
         }
