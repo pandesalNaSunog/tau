@@ -13,6 +13,14 @@
     
             $query = "INSERT INTO comments(`user_id`,`post_id`,`comment`,`created_at`,`updated_at`)VALUES('$userId','$postId','$comment','$today','$today')";
             $con->query($query) or die($con->error);
+
+            $query = "SELECT * FROM posts WHERE id = '$postId'";
+            $selectPostQuery = $con->query($query) or die($con->error);
+            $postRow = $selectPostQuery->fetch_assoc();
+            $numberOfComments = $postRow['comments'];
+            $numberOfComments++;
+            $query = "UPDATE posts SET comments = '$numberOfComments' WHERE id = '$postId'";
+            $con->query($query) or die($con->error);
     
             $query = "SELECT * FROM comments WHERE id = LAST_INSERT_ID()";
             $comment = $con->query($query) or die($con->error);

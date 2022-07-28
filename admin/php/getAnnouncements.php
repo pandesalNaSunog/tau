@@ -11,6 +11,11 @@
             $data = array();
 
             while($row = $an->fetch_assoc()){
+                $anouncerId = $row['user_id'];
+                $query = "SELECT * FROM users WHERE id = '$anouncerId'";
+                $announcer = $con->query($query) or die($con->error);
+                $announcerRow = $announcer->fetch_assoc();
+                $name = $announcerRow['name'];
 
                 $date = date_create($row['created_at']);
                 $date = date_format($date, 'M d, Y h:i A');
@@ -20,6 +25,7 @@
 
                 $data[] = array(
                     'id' => $announcementId,
+                    'name' => $name,
                     'description' => $announcement,
                     'created_at' => $date
                 );

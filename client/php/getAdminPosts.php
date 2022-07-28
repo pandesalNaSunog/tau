@@ -1,7 +1,7 @@
 <?php
 
 
-    if($_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest' && isset($_SERVER['HTTP_X_REQUESTED_WITH'])){
+    if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'){
         session_start();
         include('connection.php');
         $con = connect();
@@ -30,7 +30,7 @@
     
                 $comments = array();
                 //get latest comment
-                $query = "SELECT * FROM comments WHERE post_id = '$postId' ORDER BY created_at DESC";
+                $query = "SELECT * FROM comments WHERE post_id = '$postId' ORDER BY created_at DESC LIMIT 3";
                 $comment = $con->query($query) or die($con->error);
                 while($commentRow = $comment->fetch_assoc()){
                     $commentComment = $commentRow['comment'];
@@ -54,7 +54,20 @@
                 );
                 
             }
-            echo json_encode($response);
+
+            $query = "SELECT * FROM posts ORDER BY comments DESC LIMIT 3";
+            $trending = $con->query($query) or die($con->error);
+            $trendingTopics = array();
+            while($trendingRow = $trending->fetch_assoc()){
+                $trendingTopics[] = array(
+                    'post_id' => $trendingRow['id'],
+                    'description' => $trendingRow['description'],
+                );
+            }
+            echo json_encode(array(
+                'posts' => $response,
+                'trending_topics' => $trendingTopics
+            ));
         }
     }else{
         echo header('HTTP/1.0 403 Forbidden');

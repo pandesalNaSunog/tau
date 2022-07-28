@@ -19,7 +19,8 @@
             $postsWithName = array();
 
             foreach($posts as $postItem){
-                $query = "SELECT * FROM users WHERE id = '$userId'";
+                $posterId = $postItem['user_id'];
+                $query = "SELECT * FROM users WHERE id = '$posterId'";
                 $user = $con->query($query) or die($con->error);
                 $row = $user->fetch_assoc();
                 $name = $row['name'];
