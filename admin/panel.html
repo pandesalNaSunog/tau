@@ -358,7 +358,7 @@
                     type: 'GET',
                     url: 'php/getAllPosts.php',
                     success: function(response){
-                        console.log(response);
+                        ;
                         if(response == 'index.html'){
                             window.location.replace(response);
                         }else{
@@ -475,7 +475,7 @@
                                 description: createTopicDescription.val()
                             },
                             success: function(response){
-                                console.log(response);
+                                
                                 createTopicDescription.val('');
                                 var data = JSON.parse(response);
                                 var profilePic = "";
