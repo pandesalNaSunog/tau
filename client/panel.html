@@ -66,6 +66,7 @@
                             announcement: postAnnouncementText.val(),
                         },
                         success: function(response){
+                            postAnnouncementText.val('');
                             var data = JSON.parse(response);
                             announcementTable.append(`<div class="card shadow mt-2 col-lg-6 mx-auto">
                                                         <div class="card-body">
