@@ -66,7 +66,22 @@
                             announcement: postAnnouncementText.val(),
                         },
                         success: function(response){
-                            ;
+                            var data = JSON.parse(response);
+                            announcementTable.append(`<div class="card shadow mt-2 col-lg-6 mx-auto">
+                                                        <div class="card-body">
+                                                            <div class="row row-cols-2 gx-3">
+                                                                <div class="col-2">
+                                                                    <img src="../admin/images/tau logo.png" style="height:auto; width:auto" alt="" class="img-fluid">
+                                                                </div>
+                                                                <div class="col align-self-center">
+                                                                    <p class="fw-bold">${data.name}<br><span class="fw-normal"><em>${data.date}</em></span></p>
+                                                                </div>
+                                                            </div>
+                                                            <p class="px-5 py-3 text-center fw-bold fs-2">
+                                                                ${data.announcement}
+                                                            </p>
+                                                        </div>
+                                                    </div>`)
                         }
                     })
                 }
