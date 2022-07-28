@@ -1,6 +1,6 @@
 <?php
     include('client/php/connection.php');
-
+    $con = connect();
     $query = "SELECT * FROM posts";
 
     $post = $con->query($query) or die($con->error);
