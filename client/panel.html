@@ -525,6 +525,9 @@
             }
 
             function addToPostList(index, comments, profilePicture, name, date, description, postId){
+                if(profilePicture == null){
+                    profilePicture = "images/blank.png";
+                }
                 posts.append(`<div id="${postId}" class="col-lg-6 mx-auto card mt-5 shadow rounded-3">
                                     <div class="card-body">
                                         <div class="d-flex">
