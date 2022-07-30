@@ -27,6 +27,7 @@
             var updateProfile = $('#update-profile');
             var complaintId = 0;
             var globalAnnouncementId = 0;
+            var globalPostId = 0;
             var complaintsTable = $('#complaints-table');
             var createUserEmail = $('#create-user-email');
             var createUserButton = $('#create-user-btn');
@@ -57,6 +58,11 @@
             var editProfileConfirmPassword = $('#edit-profile-confirm-password');
             var confirmEditProfile = $('#confirm-edit-profile');
 
+            var specificPostProfilePicture = $('#specific-post-profile-picture');
+            var specificPostName = $('#specific-post-name');
+            var specificPostDate = $('#specific-post-date');
+            var specificPostDescription = $('#specific-post-description');
+            var specificPostCommentList = $('#specific-post-comment-list');
             postAnnouncementFunc();
             createPost();
             createUser();
@@ -334,7 +340,7 @@
                         success: function(response){
                             if(response != 'index.html'){
                                 var data = JSON.parse(response);
-                                writeCommentBtn.parent().parent().children().eq(1).append(`<div class="card shadow mt-2">
+                                writeCommentBtn.parent().parent().children().eq(2).append(`<div class="card shadow mt-2">
                                                                         <div class="card-body">
                                                                             <p class="lh-sm">
                                                                                 <span class="fw-bold">${data.name}</span><br>
@@ -367,80 +373,146 @@
                                 if(value.profile_picture == null){
                                     value.profile_picture = "../client/images/blank.png";
                                 }
-                                postsList.append(`<div class="post card shadow col-md-6 mx-auto mt-1">
-                                                        <div class="card-body">
-                                                            <div class="d-flex">
-                                                                <img src="${value.profile_picture}" class="img-fluid" style="height:50px;width:50px;border-radius:100%">
-                                                                <div class="ms-3">
-                                                                    <p class="lh-sm"><span class="fw-bold fs-4">${value.name}</span></span><br>${value.date}</p>
-                                                                </div>
-                                                                <button value="${value.post_id}" class="delete-post btn btn-outline-success ms-auto my-2">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
-                                                                        <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
-                                                                    </svg>
-                                                                </button>
-                                                            </div>
-                                                            <p class="fs-2">${value.description}</p>
-                                                        </div>
-                                                        <div class="card-footer">
-                                                            <h5 class="fw-bold">Comments</h5>
-                                                            <div class="comment-list">
-
-                                                            </div>
-                                                            <div class="input-group mt-3">
-                                                                <input class="form-control" type="text" placeholder="Write a comment...">
-                                                                <button value="${value.post_id}" class="write-comment-btn btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-fill" viewBox="0 0 16 16">
-                                                                <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
-                                                                </svg></button>
-                                                            </div>
-                                                        </div>
-                                                    </div>`);
-                                var commentList = $('.comment-list');
-                                getPostComments(value.post_id, commentList, index);
-                            })
-                            var writeCommentBtn = $('.write-comment-btn')
-
-                            writeCommentBtn.on('click', function(){
-                                var thisWriteComment = $(this).parent().children().eq(0);
-                                writeCommentFunc(thisWriteComment, $(this));
-                            })
-                            
-
-
-                            const postObserver = new IntersectionObserver(entries => {
-                                entries.forEach(entry =>{
-                                    if(entry.isIntersecting){
-                                        entry.target.classList.add('ease-in');
-                                        return;
-                                    }
-                                    entry.target.classList.remove('ease-in');
-                                })
-                            })
-
-                            document.querySelectorAll('.post').forEach(function callback(value, index){
-                                postObserver.observe(document.querySelectorAll('.post')[index]);
-                            })
+                                addToPostsList(value.profile_picture, value.name, value.date, value.post_id, value.description, index);
                                 
+                            })  
                             
+                            postFunctions();
                             
-
-                            
-                            
-                            
-            
-                            
-                            var deletePostButton = $('.delete-post');
-                            deletePostButton.on('click', function(){
-                                var thisDelete = $(this);
-                                deletePost(thisDelete);
-                            })
                         }
-                        
                     }
                 })
             }
 
+            function postFunctions(){
+                var writeCommentBtn = $('.write-comment-btn')
+                var viewAllComments = $('.view-all-comments');
+                viewAllComments.on('click', function(){
+                    globalPostId = $(this).val();
+                    specificPostProfilePicture.removeAttr("src");
+                    specificPostName.text('');
+                    specificPostDate.text('');
+                    specificPostDescription.text('');
+                    specificPostCommentList.children().remove();
+                    $.ajax({
+                        type: 'POST',
+                        url: 'php/getSpecificPost.php',
+                        data:{
+                            post_id: globalPostId,
+                        },
+                        success: function(response){
+                            var data = JSON.parse(response);
 
+                            specificPostProfilePicture.attr("src", data.profile_picture);
+                            specificPostName.text(data.name);
+                            specificPostDate.text(data.date);
+                            specificPostDescription.text(data.description);
+                            $(data.comments).each(function(index, value){
+                                specificPostCommentList.append(`<div class="card shadow mt-2">
+                                                                    <div class="card-body">
+                                                                        <p class="lh-sm">
+                                                                            <span class="fw-bold">${value.name}</span><br>
+                                                                            <span class="fs-6">${value.comment}</span>
+                                                                        </p>
+                                                                    </div>
+                                                                </div>`)
+                            })
+                            
+                        }
+                    })
+                })
+                writeCommentBtn.on('click', function(){
+                    var thisWriteComment = $(this).parent().children().eq(0);
+                    writeCommentFunc(thisWriteComment, $(this));
+                })
+        
+                var deletePostButton = $('.delete-post');
+                deletePostButton.on('click', function(){
+                    if(confirm("Delete this Post?") == true){
+                        var thisDelete = $(this);
+                        deletePost(thisDelete);
+                    }
+                    
+                })
+                const postObserver = new IntersectionObserver(entries => {
+                    entries.forEach(entry =>{
+                        if(entry.isIntersecting){
+                            entry.target.classList.add('ease-in');
+                            return;
+                        }
+                        entry.target.classList.remove('ease-in');
+                    })
+                })
+                document.querySelectorAll('.post').forEach(function callback(value, index){
+                    postObserver.observe(document.querySelectorAll('.post')[index]);
+                })
+            }
+
+            function addToPostsListTwo(profilePicture, name, date, postId, description){
+                postsList.prepend(`<div class="post card shadow col-md-6 mx-auto mt-1">
+                                    <div class="card-body">
+                                        <div class="d-flex">
+                                            <img src="${profilePicture}" class="img-fluid" style="height:50px;width:50px;border-radius:100%">
+                                            <div class="ms-3">
+                                                <p class="lh-sm"><span class="fw-bold fs-4">${name}</span></span><br>${date}</p>
+                                            </div>
+                                            <button value="${postId}" class="delete-post btn btn-outline-success ms-auto my-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                                    <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <p class="fs-2">${description}</p>
+                                    </div>
+                                    <div class="card-footer">
+                                        <h5 class="fw-bold">Comments</h5>
+                                        <button value="${postId}" class="btn btn-link view-all-comments" data-bs-toggle="modal" data-bs-target="#view-all-comments-modal">View all Comments</button>
+                                        <div class="comment-list">
+
+                                        </div>
+                                        <div class="input-group mt-3">
+                                            <input class="form-control" type="text" placeholder="Write a comment...">
+                                            <button value="${postId}" class="write-comment-btn btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-fill" viewBox="0 0 16 16">
+                                            <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
+                                            </svg></button>
+                                        </div>
+                                    </div>
+                                </div>`);
+            }
+
+            function addToPostsList(profilePicture, name, date, postId, description, index){
+                postsList.append(`<div class="post card shadow col-md-6 mx-auto mt-1">
+                                    <div class="card-body">
+                                        <div class="d-flex">
+                                            <img src="${profilePicture}" class="img-fluid" style="height:50px;width:50px;border-radius:100%">
+                                            <div class="ms-3">
+                                                <p class="lh-sm"><span class="fw-bold fs-4">${name}</span></span><br>${date}</p>
+                                            </div>
+                                            <button value="${postId}" class="delete-post btn btn-outline-success ms-auto my-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                                    <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <p class="fs-2">${description}</p>
+                                    </div>
+                                    <div class="card-footer">
+                                        <h5 class="fw-bold">Comments</h5>
+                                        <button value="${postId}" class="btn btn-link view-all-comments" data-bs-toggle="modal" data-bs-target="#view-all-comments-modal">View all Comments</button>
+                                        <div class="comment-list">
+
+                                        </div>
+                                        <div class="input-group mt-3">
+                                            <input class="form-control" type="text" placeholder="Write a comment...">
+                                            <button value="${postId}" class="write-comment-btn btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-fill" viewBox="0 0 16 16">
+                                            <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
+                                            </svg></button>
+                                        </div>
+                                    </div>
+                                </div>`);
+                var commentList = $('.comment-list');
+                getPostComments(postId, commentList, index);
+            }
 
             function deletePost(deleteButton){
                 $.ajax({
@@ -484,45 +556,9 @@
                                 }else{
                                     profilePic = data.profile_picture
                                 }
-                                postsList.prepend(`<div class="card shadow col-md-6 mx-auto mt-1">
-                                                        <div class="card-body">
-                                                            <div class="d-flex">
-                                                                <img src="${profilePic}" class="img-fluid" style="height:50px;width:50px;border-radius:100%">
-                                                                <div class="ms-3">
-                                                                    <p class="lh-sm"><span class="fw-bold fs-4">${data.name}</span></span><br>${data.date}</p>
-                                                                </div>
-                                                                <button value="${data.post_id}" class="delete-post btn btn-outline-success ms-auto my-2">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
-                                                                        <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
-                                                                    </svg>
-                                                                </button>
-                                                            </div>
-                                                            <p class="fs-2">${data.description}</p>
-                                                        </div>
-                                                        <div class="card-footer">
-                                                            <h5 class="fw-bold">Comments</h5>
-                                                            <div class="comment-list">
 
-                                                            </div>
-                                                            <div class="input-group mt-3">
-                                                                <input class="form-control" type="text" placeholder="Write a comment...">
-                                                                <button value="${data.post_id}" class="write-comment-btn btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-fill" viewBox="0 0 16 16">
-                                                                <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
-                                                                </svg></button>
-                                                            </div>
-                                                        </div>
-                                                    </div>`);
-                                var deletePostButton = $('.delete-post');
-                                deletePostButton.on('click', function(){
-                                    var thisDelete = $(this);
-                                    deletePost(thisDelete);
-                                })
-                                
-                                var writeCommentBtn = $('.write-comment-btn');
-                                writeCommentBtn.on('click', function(){
-                                    var thisWriteComment = $(this).parent().children().eq(0);
-                                    writeCommentFunc(thisWriteComment, $(this));
-                                })
+                                addToPostsListTwo(profilePic, data.name, data.date, data.post_id, data.description)
+                                postFunctions();
                             }
                         })
                     }
@@ -833,13 +869,9 @@
     <section id="forum-section">
         <div class="container">
             <div class="col-lg-6 mx-auto card shadow mt-5">
-                <div class="card-header">
-                    <h3 class="fw-bold">
-                        Post a Topic
-                    </h3>
-                </div>
+                
                 <div class="card-body">
-                    <textarea id="create-topic-description" class="form-control mt-3" placeholder="Topic Description"></textarea>
+                    <textarea id="create-topic-description" class="form-control mt-3" placeholder="What's on your mind?"></textarea>
                     <div class="invalid-feedback">
                         Please fillout this field.
                     </div>
@@ -966,6 +998,41 @@
                         </div>
                     </div>
                     <button id="confirm-edit-profile" class="btn btn-success rounded-pill mt-3" style="width:100%">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="view-all-comments-modal" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="card shadow mt-1">
+                        <div class="card-body">
+                            <div class="d-flex">
+                                <img id="specific-post-profile-picture" class="img-fluid" style="height:50px;width:50px;border-radius:100%">
+                                <div class="ms-3">
+                                    <p class="lh-sm"><span id="specific-post-name" class="fw-bold fs-4"></span><br><span id="specific-post-date"></span></p>
+                                </div>
+                            </div>
+                            <p class="fs-2" id="specific-post-description"></p>
+                        </div>
+                        <div class="card-footer">
+                            <h5 class="fw-bold">Comments</h5>
+                            <div id="specific-post-comment-list">
+
+                            </div>
+                            <div class="input-group mt-3">
+                                <input class="form-control" type="text" placeholder="Write a comment...">
+                                <button value="${value.post_id}" class="write-comment-btn btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-fill" viewBox="0 0 16 16">
+                                <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
+                                </svg></button>
+                            </div>
+                        </div>
+                    </div>`
                 </div>
             </div>
         </div>
