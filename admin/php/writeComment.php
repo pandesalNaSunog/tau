@@ -11,6 +11,19 @@
             $comment = htmlspecialchars($_POST['comment']);
             $query = "INSERT INTO comments(`user_id`,`post_id`,`comment`,`created_at`,`updated_at`)VALUES('$adminId','$postId','$comment','$date','$date')";
             $con->query($query) or die($con->error);
+
+
+            $query = "SELECT * FROM posts WHERE id = '$postId'";
+            $post = $con->query($query) or die($con->error);
+
+            $postRow = $post->fetch_assoc();
+            $postComments = $postRow['comments'];
+
+            $postComments++;
+
+            $query = "UPDATE posts SET comments = '$postComments' WHERE id = '$postId'";
+            $con->query($query) or die($con->error);
+
             $query = "SELECT * FROM comments WHERE id = LAST_INSERT_ID()";
             $comment = $con->query($query) or die($con->error);
             $row = $comment->fetch_assoc();
