@@ -10,6 +10,7 @@
     <script src="../js/jquery.js"></script>
     <script>
         $(document).ready(function(){
+            var globalPostId = 0;
             var globalUserId = 0;
             var noPosts = $('#no-posts');
             var complaintsTable = $('#complaints-table');
@@ -52,6 +53,11 @@
             var postAnnouncementText = $('#post-announcement-text');
             var confirmPostAnnouncement = $('#confirm-post-announcement');
             var trendingTopics = $('#trending-topics');
+            var specificPostProfilePicture = $('#specific-post-profile-picture');
+            var specificPostName = $('#specific-post-name');
+            var speciicPostDate = $('#specific-post-date');
+            var specificPostDescription = $('#specific-post-description');
+            var specificPostCommentList = $('#specific-post-comment-list');
 
             postAnnouncementCard.hide();
 
@@ -457,14 +463,49 @@
             function postFunctions(){
                 var writeComment = $('.write-comment');
                 var writeCommentBtn = $('.write-comment-btn')
-
+                var viewAllComments = $('.view-all-comments');
                 writeComment.on('keydown', function(){
                     $(this).removeClass('is-invalid');
+                })
+
+                viewAllComments.on('click', function(){
+                    globalPostId = $(this).val();
+                    specificPostName.text('');
+                    speciicPostDate.text('');
+                    specificPostProfilePicture.removeAttr('src');
+                    specificPostDescription.text('');
+                    specificPostCommentList.children().remove();
+
+                    $.ajax({
+                        type: 'POST',
+                        url: 'php/getSpecificPostWithComments.php',
+                        data:{
+                            post_id: globalPostId,
+                        },
+                        success: function(response){
+                            var data = JSON.parse(response);
+                            console.log(data);
+                            specificPostProfilePicture.attr("src", data.profile_picture);
+                            specificPostName.text(data.name);
+                            speciicPostDate.text(data.date);
+                            specificPostDescription.text(data.description);
+                            $(data.comments).each(function(index, value){
+                                specificPostCommentList.append(`<div class="card mt-2">
+                                                                <div class="card-body">
+                                                                    <p class="lh-sm">
+                                                                        <span class="fw-bold">${value.name}</span><br>
+                                                                        <span class="fs-6">${value.comment}</span>
+                                                                    </p>
+                                                                </div>
+                                                            </div>`)
+                            })
+                        }
+                    })
                 })
                 writeCommentBtn.on('click', function(){
                     var thisWriteComment = $(this).parent().children().eq(0);
                     var thisWriteCommentBtn = $(this);
-                    var thisCommentList = $(this).parent().parent().children().eq(1);
+                    var thisCommentList = $(this).parent().parent().children().eq(2);
                     if(thisWriteComment.val() == ""){
                         thisWriteComment.addClass('is-invalid');
                     }else{
@@ -511,13 +552,14 @@
                                     </div>
                                     <div class="card-footer">
                                         <h5 class="fw-bold">Comments</h5>
+                                        <button value = "${postId}" class="view-all-comments btn btn-link" data-bs-toggle="modal" data-bs-target="#view-all-comments-modal">View All Comments...</button>
                                         <div class="comment-list">
                                             
                                         </div>
                                         <div class="input-group mt-3">
 
-                                                <input class="write-comment form-control" type="text" placeholder="Write a comment...">
-                                                <div class="invalid-feedback">Please fill out this field.</div>
+                                            <input class="write-comment form-control" type="text" placeholder="Write a comment...">
+                                            <div class="invalid-feedback">Please fill out this field.</div>
                                             <button value="${postId}" class="write-comment-btn btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-fill" viewBox="0 0 16 16">
                                             <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
                                             </svg></button>
@@ -542,6 +584,7 @@
                                     </div>
                                     <div class="card-footer">
                                         <h5 class="fw-bold">Comments</h5>
+                                        <button value = "${postId}" class="view-all-comments btn btn-link" data-bs-toggle="modal" data-bs-target="#view-all-comments-modal">View All Comments...</button>
                                         <div class="comment-list">
                                             
                                         </div>
@@ -833,6 +876,42 @@
             </div>
         </div>
     </div>
-    
+
+    <div class="modal fade" id="view-all-comments-modal" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="card shadow rounded-3">
+                        <div class="card-body">
+                            <div class="d-flex">
+                                <img id="specific-post-profile-picture" class="img-fluid" style="height:50px;width:50px;border-radius:100%">
+                                <div class="ms-3">
+                                    <p class="lh-sm"><span id="specific-post-name" class="fw-bold fs-4"></span><br><em><span id="specific-post-date"></em></span></p>
+                                </div>
+                            </div>
+                            <p id="specific-post-description" class="fs-2"></p>
+                        </div>
+                        <div class="card-footer">
+                            <h5 class="fw-bold">Comments</h5>
+                            <div id="specific-post-comment-list">
+                                
+                            </div>
+                            <div class="input-group mt-3">
+
+                                <input class="write-comment form-control" type="text" placeholder="Write a comment...">
+                                <div class="invalid-feedback">Please fill out this field.</div>
+                                <button value="${postId}" class="write-comment-btn btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-fill" viewBox="0 0 16 16">
+                                <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
+                                </svg></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
