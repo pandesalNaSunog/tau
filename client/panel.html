@@ -237,27 +237,40 @@
                 })
             }
             function editProfileFunc(profilename, profileemail){
-                $.ajax({
-                    type: 'POST',
-                    url: 'php/updateProfile.php',
-                    data:{
-                        name: updateName.val(),
-                        email: updateEmail.val(),
-                        password: updatePassword.val()
-                    },
-                    success: function(response){
-                        ;
-                        if(response == 'ok'){
-                            alert('Profile has been updated.');
-                            profilename.text(updateName.val());
-                            profileemail.text(updateEmail.val());
-                        }else{
-                            alert('Session not valid. You will be redirected to login page.');
-                            window.location.replace(response);
+                if(updateName.val() == ""){
+                    updateName.addClass('is-invalid');
+                }else if(updateEmail.val() == ""){
+                    updateEmail.addClass('is-invalid');
+                }else if(updatePassword.val() == ""){
+                    updatePassword.addClass('is-invalid');
+                }else if(confirmPassword.val() == ""){
+                    confirmPassword.addClass('is-invalid');
+                }else if(updatePassword.val() != confirmPassword.val()){
+                    alert('Password Mismatch');
+                }else{
+                    $.ajax({
+                        type: 'POST',
+                        url: 'php/updateProfile.php',
+                        data:{
+                            name: updateName.val(),
+                            email: updateEmail.val(),
+                            password: updatePassword.val()
+                        },
+                        success: function(response){
+                            ;
+                            if(response == 'ok'){
+                                alert('Profile has been updated.');
+                                profilename.text(updateName.val());
+                                profileemail.text(updateEmail.val());
+                            }else{
+                                alert('Session not valid. You will be redirected to login page.');
+                                window.location.replace(response);
+                            }
+                            
                         }
-                        
-                    }
-                })
+                    })
+                }
+                
             }
 
 
