@@ -109,7 +109,7 @@ class CommentController extends Controller
             $name = $user->name;
 
             $response[] = [
-                'comment' => $commentItem->comments,
+                'comment' => $commentItem->comment,
                 'name' => $name,
                 'comment_id' => $commentItem->id
             ];
