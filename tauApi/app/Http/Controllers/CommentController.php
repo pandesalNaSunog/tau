@@ -100,7 +100,7 @@ class CommentController extends Controller
 
         $postId = $request['post_id'];
 
-        $comments = Comment::where('post_id', $postId)->orderBy('id', 'asc')->get();
+        $comments = Comment::where('post_id', $postId)->orderBy('id', 'desc')->get();
         $response = array();
 
         foreach($comments as $commentItem){
