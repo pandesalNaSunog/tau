@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Announcement;
 use Laravel\Sanctum;
 use Laravel\Sanctum\PersonalAccessToken;
+use App\Models\User;
 class AnnouncementController extends Controller
 {
     public function getAnnouncements(){
