@@ -50,7 +50,7 @@ class CommentController extends Controller
     }
 
     public function getPosts(){
-        $posts = Post::orderBy('id', 'desc')->get();
+        $posts = Post::orderBy('id', 'asc')->get();
         $postArray = array();
         
         foreach($posts as $postItem){
@@ -64,7 +64,7 @@ class CommentController extends Controller
             $description = $postItem->description;
 
             
-            $comments = Comment::where('post_id', $postId)->limit(3)->get();
+            $comments = Comment::where('post_id', $postId)->orderBy('id', 'desc')->limit(3)->get();
             $commentArray = array();
             foreach($comments as $commentItem){
                 $commentId = $commentItem->id;
