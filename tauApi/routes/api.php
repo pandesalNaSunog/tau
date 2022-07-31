@@ -18,6 +18,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/posts', [CommentController::class, 'getPosts']);
 Route::get('/announcements', [AnnouncementController::class, 'getAnnouncements']);
 Route::group(['middleware' => ['auth:sanctum']], function(){
+    Route::post('/write-post', [PostController::class, 'writePost']);
     Route::post('/post-comment', [CommentController::class, 'postComment']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/my-profile', [AuthController::class, 'getProfile']);

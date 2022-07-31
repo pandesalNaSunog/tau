@@ -63,6 +63,15 @@
             var specificPostDate = $('#specific-post-date');
             var specificPostDescription = $('#specific-post-description');
             var specificPostCommentList = $('#specific-post-comment-list');
+
+
+            
+
+
+
+
+
+
             postAnnouncementFunc();
             createPost();
             createUser();
@@ -384,9 +393,77 @@
                 })
             }
 
+            function appendedPostFunctions(postCard){
+                var thiswriteCommentBtn = postCard.find('.write-comment-btn');
+                var thisviewAllComments = postCard.find('.view-all-comments');
+                var thisdeletePostButton = postCard.find('.delete-post');
+
+                thisviewAllComments.on('click', function(){
+                    globalPostId = $(this).val();
+                    specificPostProfilePicture.removeAttr("src");
+                    specificPostName.text('');
+                    specificPostDate.text('');
+                    specificPostDescription.text('');
+                    specificPostCommentList.children().remove();
+                    $.ajax({
+                        type: 'POST',
+                        url: 'php/getSpecificPost.php',
+                        data:{
+                            post_id: globalPostId,
+                        },
+                        success: function(response){
+                            var data = JSON.parse(response);
+
+                            specificPostProfilePicture.attr("src", data.profile_picture);
+                            specificPostName.text(data.name);
+                            specificPostDate.text(data.date);
+                            specificPostDescription.text(data.description);
+                            $(data.comments).each(function(index, value){
+                                specificPostCommentList.append(`<div class="card shadow mt-2">
+                                                                    <div class="card-body">
+                                                                        <p class="lh-sm">
+                                                                            <span class="fw-bold">${value.name}</span><br>
+                                                                            <span class="fs-6">${value.comment}</span>
+                                                                        </p>
+                                                                    </div>
+                                                                </div>`)
+                            })
+                            
+                        }
+                    })
+                })
+                thiswriteCommentBtn.on('click', function(){
+                    var thisWriteComment = $(this).parent().children().eq(0);
+                    writeCommentFunc(thisWriteComment, $(this));
+                })
+        
+                
+                thisdeletePostButton.on('click', function(){
+                    if(confirm("Delete this Post?") == true){
+                        var thisDelete = $(this);
+                        deletePost(thisDelete);
+                    }
+                    
+                })
+                const postObserver = new IntersectionObserver(entries => {
+                    entries.forEach(entry =>{
+                        if(entry.isIntersecting){
+                            entry.target.classList.add('ease-in');
+                            return;
+                        }
+                        entry.target.classList.remove('ease-in');
+                    })
+                })
+                document.querySelectorAll('.post').forEach(function callback(value, index){
+                    postObserver.observe(document.querySelectorAll('.post')[index]);
+                })
+            }
+
             function postFunctions(){
-                var writeCommentBtn = $('.write-comment-btn')
-                var viewAllComments = $('.view-all-comments');
+                writeCommentBtn = $('.write-comment-btn')
+                viewAllComments = $('.view-all-comments');
+                deletePostButton = $('.delete-post');
+
                 viewAllComments.on('click', function(){
                     globalPostId = $(this).val();
                     specificPostProfilePicture.removeAttr("src");
@@ -426,7 +503,7 @@
                     writeCommentFunc(thisWriteComment, $(this));
                 })
         
-                var deletePostButton = $('.delete-post');
+                
                 deletePostButton.on('click', function(){
                     if(confirm("Delete this Post?") == true){
                         var thisDelete = $(this);
@@ -446,6 +523,7 @@
                 document.querySelectorAll('.post').forEach(function callback(value, index){
                     postObserver.observe(document.querySelectorAll('.post')[index]);
                 })
+                
             }
 
             function addToPostsListTwo(profilePicture, name, date, postId, description){
@@ -478,6 +556,7 @@
                                         </div>
                                     </div>
                                 </div>`);
+                appendedPostFunctions(postsList.children().eq(0));
             }
 
             function addToPostsList(profilePicture, name, date, postId, description, index){
@@ -558,7 +637,6 @@
                                 }
 
                                 addToPostsListTwo(profilePic, data.name, data.date, data.post_id, data.description)
-                                postFunctions();
                             }
                         })
                     }
