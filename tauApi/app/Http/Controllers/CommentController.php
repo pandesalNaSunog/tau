@@ -52,6 +52,7 @@ class CommentController extends Controller
     public function getPosts(){
         $posts = Post::orderBy('id', 'asc')->get();
         $postArray = array();
+        $trendingTopics = array();
         
         foreach($posts as $postItem){
 
@@ -91,7 +92,12 @@ class CommentController extends Controller
             ];
         }
 
-        return response($postArray, 200);
+        $trendingTopics = Post::orderBy('comments','desc')->limit(3)->get();
+
+        return response([
+            'posts' => $postArray,
+            'trending_topics' => $trendingTopics
+        ], 200);
     }
     public function getPostComments(Request $request){
         $request->validate([
