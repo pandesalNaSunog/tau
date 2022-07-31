@@ -93,4 +93,28 @@ class CommentController extends Controller
 
         return response($postArray, 200);
     }
+    public function getPostComments(Request $request){
+        $request->validate([
+            'post_id' => 'required',
+        ]);
+
+        $postId = $request['post_id'];
+
+        $comments = Comment::where('post_id', $postId)->orderBy('id', 'asc')->get();
+        $response = array();
+
+        foreach($comments as $commentItem){
+            $userId = $commentItem->user_id;
+            $user = User::where('id', $userId)->first();
+            $name = $user->name;
+
+            $response[] = [
+                'comment' => $commentItem->comments,
+                'name' => $name,
+                'comment_id' => $commentItem->id
+            ];
+        }
+
+        return response($response, 200);
+    }
 }

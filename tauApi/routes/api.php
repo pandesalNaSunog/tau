@@ -29,4 +29,5 @@ Route::group(['middleware' => ['auth:sanctum']], function(){
     Route::post('/send-message', [MessageController::class, 'sendMessage']);
     Route::post('/update-profile-picture', [AuthController::class, 'updateProfilePicture']);
     Route::post('/update-profile', [AuthController::class, 'updateProfile']);
+    Route::post('/post-comments', [CommentController::class, 'getPostComments']);
 });
