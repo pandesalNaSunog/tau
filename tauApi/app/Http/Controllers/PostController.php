@@ -22,7 +22,7 @@ class PostController extends Controller
         $post = Post::create([
             'user_id' => $id,
             'title' => 'Title',
-            'description' => $request['description'],
+            'description' => htmlspecialchars($request['description']),
             'comments' => 0,
         ]);
 
