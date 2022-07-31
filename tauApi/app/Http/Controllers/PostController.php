@@ -27,8 +27,12 @@ class PostController extends Controller
         ]);
 
         return response([
-            'post' => $post,
-            'user' => $user
+            'post_id' => $post->id,
+            'name' => $user->name,
+            'profile_picture' => $user->profile_picture,
+            'date' => $post->created_at->format('M d, Y h:i A'),
+            'description' => $post->description,
+            'comments' => array()
         ], 200);
     }
 }
