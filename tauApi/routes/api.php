@@ -30,4 +30,5 @@ Route::group(['middleware' => ['auth:sanctum']], function(){
     Route::post('/update-profile-picture', [AuthController::class, 'updateProfilePicture']);
     Route::post('/update-profile', [AuthController::class, 'updateProfile']);
     Route::post('/post-comments', [CommentController::class, 'getPostComments']);
+    Route::post('/post-announcement', [AnnouncementController::class, 'postAnnouncement']);
 });

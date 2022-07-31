@@ -10,6 +10,7 @@ class Announcement extends Model
     use HasFactory;
     protected $fillable = [
         'title',
-        'description'
+        'description',
+        'user_id',
     ];
 }
