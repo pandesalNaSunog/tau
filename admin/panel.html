@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="indexStyle.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
@@ -24,6 +25,7 @@
         }
 
         $(document).ready(function(){
+            var numberOfComplaints = $('#number-of-complaints');
             var navContentFiltering = $('#nav-content-filtering');
             var updateProfile = $('#update-profile');
             var complaintId = 0;
@@ -85,6 +87,45 @@
             var confirmNewWord = $('#confirm-new-word');
             var newWordError = $('#new-word-error');
             var addNewWordModal = $('#add-new-word-modal');
+            var navAnalytics = $('#nav-analytics');
+            var analyticsSection = $('#analytics-section');
+
+
+
+
+            function getAnalytics(){
+                $.ajax({
+                    type: 'GET',
+                    url: 'php/analytics.php',
+                    success: function(response){
+                        var data = JSON.parse(response);
+                        var users = data.users;
+                        numberOfComplaints.text(data.filed_complaints);
+                        new Chart("analytics-chart", {
+                            type: "pie",
+                            data: {
+                                labels: [
+                                    "Users Who Posted Comments on Forums",
+                                    "Users Who Have Not Posted Comments on Forums"
+                                ],
+                                datasets: [{
+                                    backgroundColor: [
+                                        "#b91d47",
+                                        "#00aba9"
+                                    ],
+                                    data: [users.participating, users.not_participating]
+                                }]
+                            },
+                            options: {
+                                title: {
+                                display: true,
+                                text: "User Engagement"
+                                }
+                            }
+                        });
+                    }
+                })
+            }
 
 
             newWord.on('keydown', function(){
@@ -223,6 +264,7 @@
             navForums.removeClass('active');
             announcmentSection.hide();
             contentFilteringSection.hide();
+            analyticsSection.hide();
 
 
             confirmEditProfile.on('click', function(){
@@ -544,7 +586,6 @@
                     type: 'GET',
                     url: 'php/getAllPosts.php',
                     success: function(response){
-                        ;
                         if(response == 'index.html'){
                             window.location.replace(response);
                         }else{
@@ -824,6 +865,7 @@
                     complaintsSection.hide();
                     announcmentSection.hide();
                     contentFilteringSection.hide();
+                    analyticsSection.hide();
                 })
                 navForums.on('click', function(){
                     $('.nav-link').removeClass('active');
@@ -835,6 +877,7 @@
                     announcmentSection.hide();
                     complaintsSection.hide();
                     contentFilteringSection.hide();
+                    analyticsSection.hide();
                 })
 
                 navAnnouncements.on('click', function(){
@@ -844,7 +887,8 @@
                     userSection.hide();
                     announcmentSection.show();
                     complaintsSection.hide();
-                    contentFilteringSection.hide()
+                    contentFilteringSection.hide();
+                    analyticsSection.hide();
                 })
                 navComplaints.on('click', function(){
                     $('.nav-link').removeClass('active');
@@ -854,6 +898,7 @@
                     announcmentSection.hide();
                     complaintsSection.show();
                     contentFilteringSection.hide();
+                    analyticsSection.hide();
                     getStudentComplaints();
                 })
 
@@ -865,7 +910,20 @@
                     announcmentSection.hide();
                     complaintsSection.hide();
                     contentFilteringSection.show();
+                    analyticsSection.hide();
                     getWords();
+                })
+
+                navAnalytics.on('click', function(){
+                    $('.nav-link').removeClass('active');
+                    $(this).addClass('active');
+                    forumSection.hide();
+                    userSection.hide();
+                    announcmentSection.hide();
+                    complaintsSection.hide();
+                    contentFilteringSection.hide();
+                    analyticsSection.show();
+                    getAnalytics();
                 })
             }
 
@@ -1003,7 +1061,7 @@
 </head>
 <body class="bg-light">
     <!-- navbar -->
-    <nav class="navbar navbar-expand-lg bg-success navbar-dark sticky-top">
+    <nav class="navbar navbar-expand-xl bg-success navbar-dark sticky-top">
         <div class="container">
             <div class="navbar-brand d-flex">
                 <img src="images/tau logo.png" class="img-fluid  rounded-circle" style="height: 80px; width: 80px" alt="">
@@ -1021,7 +1079,7 @@
             <div class="collapse navbar-collapse" id="navmenu">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a id="nav-users"href="#" class="nav-link fw-bold active">
+                        <a id="nav-users" href="#" class="nav-link fw-bold active">
                             User Accounts
                         </a>
                     </li>
@@ -1044,10 +1102,17 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a id="nav-analytics" href="#" class="nav-link fw-bold">
+                            User Engagement Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a id="nav-content-filtering" href="#" class="nav-link fw-bold">
                             Content Filtering
                         </a>
                     </li>
+
+                    
                     
                     
                     <li class="nav-item">
@@ -1378,6 +1443,30 @@
             </div>
         </div>
     </div>
+
+    <section id="analytics-section">
+        <div class="container">
+            <div class="card shadow rounded-2 mx-auto col-md-10 mt-5">
+                <div class="card-header">
+                    <h3 class="fw-bold">
+                        User Engagement Analytics
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row row-cols-1 row-cols-lg-2">
+                        <div class="col col-lg-8">
+                            <canvas id="analytics-chart" style="width: 100%; height: 60vh"></canvas>
+                        </div>
+                        <div class="col col-lg-4 text-center">
+                            <p class="fw-bold">Total Number of Filed Complaints</p>
+                            <h1 class="fw-bold text-danger" style="font-size:100px" id="number-of-complaints"></h1>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </section>
 
     <div class="modal fade" id="view-all-comments-modal" data-bs-backdrop="static">
         <div class="modal-dialog">

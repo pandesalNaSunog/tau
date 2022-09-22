@@ -6,12 +6,20 @@
         $con = connect();
     
         if(isset($_GET) && isset($_SESSION['user_id'])){
-            $userId = $_SESSION['user_id'];
-            $query = "SELECT * FROM users WHERE user_type != 'admin' AND id != '$userId' ORDER BY name ASC";
+            $myId = $_SESSION['user_id'];
+            $query = "SELECT * FROM users WHERE user_type != 'admin' AND id != '$myId' ORDER BY name ASC";
             $user = $con->query($query) or die($con->error);
             $users = array();
             while($row = $user->fetch_assoc()){
-                $users[] = $row;
+
+                $userId = $row['id'];
+                $query = "SELECT * FROM messages WHERE (sender_id = '$myId' AND receiver_id = '$userId') OR (receiver_id = '$myId' AND sender_id = '$userId')";
+                $message = $con->query($query) or die($con->error);
+
+                if($messageRow = $message->fetch_assoc()){
+                    $users[] = $row;
+                }
+                
             }
     
             echo json_encode($users);

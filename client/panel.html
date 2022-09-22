@@ -58,7 +58,55 @@
             var speciicPostDate = $('#specific-post-date');
             var specificPostDescription = $('#specific-post-description');
             var specificPostCommentList = $('#specific-post-comment-list');
+            var usersToMessage = $('#users-to-message');
+            var newMessage = $('#new-message');
+            var sendNewMessage = $('#send-new-message');
 
+
+            newMessage.on('keydown', function(){
+                newMessage.removeClass('is-invalid');
+            })
+            sendNewMessage.on('click', function(){
+                if(newMessage.val() == ""){
+                    newMessage.addClass('is-invalid');
+                }else{
+                    $.ajax({
+                        type: 'POST',
+                        url: 'php/sendNewMessage.php',
+                        data:{
+                            receiver_id: usersToMessage.val(),
+                            message: newMessage.val(),
+                        },
+                        success: function(response){
+                            var data = JSON.parse(response);
+                            addToUsersToMessageTable(messageUsers.children().length, data.id, data.name);
+                            alert('Message Sent.');
+                            $('#write-new-message-modal').modal('hide');
+                            newMessage.val('');
+                            usersToMessage.val('');
+                        }
+                    })
+                }
+            })
+            usersToMessage.on('focus', function(){
+
+                usersToMessage.children().remove();
+                $.ajax({
+                    type: 'GET',
+                    url: 'php/usersToMessage.php',
+                    success: function(response){
+                        var data = JSON.parse(response);
+
+                        $(data).each(function(index, value){
+                            addToUsersSelection(index, value.id, value.name);
+                        })
+                    }
+                })
+            })
+
+            function addToUsersSelection(index, id, name){
+                usersToMessage.append(`<option value="${id}">${name}</option>`)
+            }
             postAnnouncementCard.hide();
 
             confirmPostAnnouncement.on('click', function(){
@@ -286,44 +334,49 @@
                         }else{
                             var data = JSON.parse(response);
                             $(data).each(function(index, value){
-                                messageUsers.append(`<div class="card col-lg-5 mx-auto mt-2">
-                                                        <div class="card-body">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-fill" viewBox="0 0 16 16">
-                                                            <path d="M8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6-.097 1.016-.417 2.13-.771 2.966-.079.186.074.394.273.362 2.256-.37 3.597-.938 4.18-1.234A9.06 9.06 0 0 0 8 15z"/>
-                                                            </svg><button data-bs-toggle="modal" data-bs-target="#conversation-modal" class="btn btn-link ms-3 user" value="${value.id}">${value.name}</button>
-                                                        </div>
-                                                    </div>`)
+                                addToUsersToMessageTable(index, value.id, value.name)
                             })
-
-                            var user = $('.user');
-                            user.on('click', function(){
-                                receiverName.text($(this).text());
-                                globalUserId = $(this).val();
-                                var thisUserId = $(this).val();
-                                messageList.children().remove();
-
-                                $.ajax({
-                                    type: 'GET',
-                                    url: 'php/getMessages.php',
-                                    data: {
-                                        user_id: thisUserId
-                                    },
-                                    success: function(response){
-                                        ;
-                                        var data = JSON.parse(response);
-                                        $(data).each(function(index, value){
-                                            if(value.mine == false){
-                                                messageList.append(`<div class="card shadow bg-light text-dark me-auto col-7 rounded-4 mt-3"><div class="card-body">${value.message.message}</div></div>`)
-                                            }else{
-                                                messageList.append(`<div class="card shadow bg-success text-light ms-auto col-7 rounded-4 mt-3"><div class="card-body">${value.message.message}</div></div>`)
-                                            }
-                                        })
-                                    }
-                                })
-                            })
+                            
                         }
                         
                     }
+                })
+            }
+
+            function addToUsersToMessageTable(index, id, name){
+                messageUsers.append(`<div class="card col-lg-5 mx-auto mt-2">
+                                        <div class="card-body">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-fill" viewBox="0 0 16 16">
+                                            <path d="M8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6-.097 1.016-.417 2.13-.771 2.966-.079.186.074.394.273.362 2.256-.37 3.597-.938 4.18-1.234A9.06 9.06 0 0 0 8 15z"/>
+                                            </svg><button data-bs-toggle="modal" data-bs-target="#conversation-modal" class="btn btn-link ms-3 user" value="${id}">${name}</button>
+                                        </div>
+                                    </div>`)
+
+                var user = messageUsers.children().eq(index).find('.user');
+                user.on('click', function(){
+                    receiverName.text($(this).text());
+                    globalUserId = $(this).val();
+                    var thisUserId = $(this).val();
+                    messageList.children().remove();
+
+                    $.ajax({
+                        type: 'GET',
+                        url: 'php/getMessages.php',
+                        data: {
+                            user_id: thisUserId
+                        },
+                        success: function(response){
+                            ;
+                            var data = JSON.parse(response);
+                            $(data).each(function(index, value){
+                                if(value.mine == false){
+                                    messageList.append(`<div class="card shadow bg-light text-dark me-auto col-7 rounded-4 mt-3"><div class="card-body">${value.message.message}</div></div>`)
+                                }else{
+                                    messageList.append(`<div class="card shadow bg-success text-light ms-auto col-7 rounded-4 mt-3"><div class="card-body">${value.message.message}</div></div>`)
+                                }
+                            })
+                        }
+                    })
                 })
             }
             function changeProfilePicture(){
@@ -905,10 +958,36 @@
 
 
     <section id="messages-section">
-        <div class="container mt-5" id="message-users">
+        
+        <div class="container mt-5 text-center">
+            <button class="btn btn-success px-5 col-lg-5" data-bs-target="#write-new-message-modal" data-bs-toggle="modal">Write New Message</button>
+            <div id="message-users" class="text-start">
 
+            </div>
         </div>
     </section>
+
+    <div class="modal fade" id="write-new-message-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="fw-bold">
+                        Create a Conversation
+                    </h3>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label>To:</label>
+                    <select id="users-to-message" class="form-select"></select>
+                    <div class="input-group mt-3">
+                        <input id="new-message" type="text" class="form-control" placeholder="Write Your Message Here">
+                        <button id="send-new-message" class="btn btn-success">Send</button>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
 
 
     <div class="modal fade" id="upload-profile-picture-modal">
