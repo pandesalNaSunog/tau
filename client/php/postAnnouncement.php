@@ -2,6 +2,7 @@
     if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'){
         session_start();
         include('connection.php');
+        include('filter.php');
         $con = connect();
         $today = getCurrentDate();
         if(isset($_POST) && isset($_SESSION['user_id'])){
@@ -26,7 +27,7 @@
             $response = array(
                 'name' => $name,
                 'date' => $date,
-                'announcement' => $announcement
+                'announcement' => filter($announcement, $con),
             );
             echo json_encode($response);
         }else{

@@ -2,6 +2,7 @@
     if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'){
         session_start();
         include('connection.php');
+        include('filter.php');
         $con = connect();
         $today = getCurrentDate();
         if(isset($_POST) && isset($_SESSION['user_id'])){
@@ -33,7 +34,7 @@
                 'profile_picture' => $profilePicture,
                 'name' => $name,
                 'date' => $date,
-                'description' => $description,
+                'description' => filter($description, $con),
                 'post_id' => $postId,
                 'comments' => $comments
             ));

@@ -2,6 +2,7 @@
     if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'){
         session_start();
         include('connection.php');
+        include('filter.php');
         $con = connect();
 
         if(!isset($_SESSION['admin_id'])){
@@ -24,7 +25,7 @@
                 $name = $row['name'];
                 $response[] = array(
                     'name' => $name,
-                    'comment' => $commentItem['comment']
+                    'comment' => filter($commentItem['comment'], $con)
                 );
             }
 

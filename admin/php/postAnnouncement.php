@@ -13,7 +13,14 @@
             $announcement = $con->query($query) or die($con->error);
             $row = $announcement->fetch_assoc();
 
-            echo json_encode($row);
+
+            echo json_encode(
+                array(
+                    'description' => filter($row['description']),
+                    'id' => $row['id'],
+                    'created_at' => date_format(date_create($row['created_at']), "M d, Y h:i A")
+                )
+            );
         }else{
             echo 'index.html';
         }

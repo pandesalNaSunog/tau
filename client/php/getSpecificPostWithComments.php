@@ -1,6 +1,7 @@
 <?php
     if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'){
         include('connection.php');
+        include('filter.php');
         $con = connect();
         if(isset($_POST)){
             $postId = $_POST['post_id'];
@@ -35,7 +36,7 @@
                 $commenterName = $commenterRow['name'];
                 $comments[] = array(
                     'name' => $commenterName,
-                    'comment' => $commentRow['comment'],
+                    'comment' => filter($commentRow['comment'], $con)
                 );
             }
             

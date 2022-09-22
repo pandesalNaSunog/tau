@@ -3,6 +3,7 @@
     if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'){
         session_start();
         include('connection.php');
+        include('filter.php');
         $con = connect();
         $today = getCurrentDate();
         if(isset($_POST) && isset($_SESSION['user_id'])){
@@ -14,8 +15,14 @@
             $query = "SELECT * FROM complaints WHERE id = LAST_INSERT_ID()";
             $complaint = $con->query($query) or die($con->error);
             $complaintRow = $complaint->fetch_assoc();
+
+            $complaintResponse = array(
+                'complaint' => filter($complaintRow['complaint'], $con),
+                'status' => $complaintRow['status'],
+                'date' => $today
+            );
     
-            echo json_encode($complaintRow);
+            echo json_encode($complaintResponse);
         }else{
             echo 'index.html';
         }

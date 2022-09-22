@@ -2,6 +2,7 @@
     if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'){
         session_start();
         include('connection.php');
+        include('filter.php');
         $con = connect();
 
         if(isset($_GET) && isset($_SESSION['admin_id'])){
@@ -23,7 +24,7 @@
                 $complaints[] = array(
                     'id' => $row['id'],
                     'student_name' => $studentName,
-                    'complaint' => $thisComplaint,
+                    'complaint' => filter($thisComplaint, $con),
                     'date' => $date,
                     'status' => $status
                 );

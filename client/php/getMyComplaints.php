@@ -2,6 +2,7 @@
     if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'){
         session_start();
         include('connection.php');
+        include('filter.php');
         $con = connect();
     
         if(isset($_GET) && isset($_SESSION['user_id'])){
@@ -13,7 +14,7 @@
                 $date = date_create($row['created_at']);
                 $date = date_format($date, "M d, Y h:i A");
                 $complaints[] = array(
-                    'complaint' => $row['complaint'],
+                    'complaint' => filter($row['complaint'], $con),
                     'status' => $row['status'],
                     'date' => $date
                 );

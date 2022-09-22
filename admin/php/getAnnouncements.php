@@ -3,6 +3,7 @@
         session_start();
 
         include('connection.php');
+        include('filter.php');
         $con = connect();
         
         if(isset($_GET) && isset($_SESSION['admin_id'])){
@@ -26,7 +27,7 @@
                 $data[] = array(
                     'id' => $announcementId,
                     'name' => $name,
-                    'description' => $announcement,
+                    'description' => filter($announcement, $con),
                     'created_at' => $date
                 );
             }

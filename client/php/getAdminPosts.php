@@ -4,6 +4,7 @@
     if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'){
         session_start();
         include('connection.php');
+        include('filter.php');
         $con = connect();
     
         if(!isset($_SESSION['user_id'])){
@@ -48,7 +49,7 @@
                     'profile_picture' => $profilePicture,
                     'name' => $name,
                     'date' => $date,
-                    'description' => $description,
+                    'description' => filter($description, $con),
                     'post_id' => $postId,
                     'comments' => $comments
                 );
@@ -61,7 +62,7 @@
             while($trendingRow = $trending->fetch_assoc()){
                 $trendingTopics[] = array(
                     'post_id' => $trendingRow['id'],
-                    'description' => $trendingRow['description'],
+                    'description' => filter($trendingRow['description'], $con),
                 );
             }
             echo json_encode(array(

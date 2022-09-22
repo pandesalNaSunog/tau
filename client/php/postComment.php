@@ -3,6 +3,7 @@
     if($_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest' && isset($_SERVER['HTTP_X_REQUESTED_WITH'])){
         session_start();
         include('connection.php');
+        include('filter.php');
         $con = connect();
         $today = getCurrentDate();
         if(isset($_SESSION['user_id']) && isset($_POST)){
@@ -34,7 +35,7 @@
             $comment = $commentRow['comment'];
             $response = array(
                 'name' => $commentName,
-                'comment' => $comment
+                'comment' => filter($comment, $con),
             );
             echo json_encode($response);
         }else{

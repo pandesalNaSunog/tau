@@ -2,6 +2,7 @@
     if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'){
         session_start();
         include('connection.php');
+        include('filter.php');
         $con = connect();
 
         if(!isset($_SESSION['admin_id'])){
@@ -29,7 +30,7 @@
                 $id = $postItem['id'];
                 $postsWithName[] = array(
                     'name' => $name,
-                    'description' => $postItem['description'],
+                    'description' => filter($postItem['description'], $con),
                     'date' => date_format($date, 'M d, Y h:i A'),
                     'post_id' => $id,
                     'profile_picture' => $profilePicture

@@ -2,6 +2,7 @@
     if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'){
         session_start();
         include('connection.php');
+        include('filter.php');
         $con = connect();
 
         if(isset($_GET) && isset($_SESSION['user_id'])){
@@ -26,7 +27,7 @@
                 $createdAt = date_format(date_create($row['created_at']), "M d, Y h:i A");
                 $announcements[] = array(
                     'name' => $name,
-                    'announcement' => $description,
+                    'announcement' => filter($description, $con),
                     'date' => $createdAt
                 );
             }

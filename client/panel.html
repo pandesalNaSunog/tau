@@ -227,7 +227,9 @@
                     },
                     success: function(response){
                         if(response != 'index.html'){
-                            alert('Complaint has been sent to the Administrator. ')
+                            var data = JSON.parse(response);
+                            alert('Complaint has been sent to the Administrator.')
+                            complaintsTable.append(`<tr><td>${data.complaint}</td><td>${data.status}</td><td>${data.date}</td></tr>`);
                         }else{
                             window.location.replace(response);
                         }

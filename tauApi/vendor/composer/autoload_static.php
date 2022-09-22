@@ -524,6 +524,7 @@ class ComposerStaticInit6f08e8162f7810df6952b1c0e163d80b
         'App\\Http\\Middleware\\TrustProxies' => __DIR__ . '/../..' . '/app/Http/Middleware/TrustProxies.php',
         'App\\Http\\Middleware\\VerifyCsrfToken' => __DIR__ . '/../..' . '/app/Http/Middleware/VerifyCsrfToken.php',
         'App\\Models\\Announcement' => __DIR__ . '/../..' . '/app/Models/Announcement.php',
+        'App\\Models\\BadWord' => __DIR__ . '/../..' . '/app/Models/BadWord.php',
         'App\\Models\\Comment' => __DIR__ . '/../..' . '/app/Models/Comment.php',
         'App\\Models\\Complaint' => __DIR__ . '/../..' . '/app/Models/Complaint.php',
         'App\\Models\\Message' => __DIR__ . '/../..' . '/app/Models/Message.php',

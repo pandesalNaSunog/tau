@@ -2,6 +2,7 @@
     if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'){
         session_start();
         include('connection.php');
+        include('filter.php');
         $con = connect();
         $date = getCurrentDate();
 
@@ -29,7 +30,7 @@
             $formattedDate = date_format($date, 'M d, Y h:i A');
 
             echo json_encode(array(
-                'description' => $description,
+                'description' => filter($description, $con),
                 'name' => $name,
                 'date' => $formattedDate,
                 'post_id' => $postRow['id'],
