@@ -29,6 +29,7 @@
             var navContentFiltering = $('#nav-content-filtering');
             var updateProfile = $('#update-profile');
             var complaintId = 0;
+            var globalComplaintId = 0;
             var globalAnnouncementId = 0;
             var globalPostId = 0;
             var complaintsTable = $('#complaints-table');
@@ -89,6 +90,9 @@
             var addNewWordModal = $('#add-new-word-modal');
             var navAnalytics = $('#nav-analytics');
             var analyticsSection = $('#analytics-section');
+            var complaintDate = $('#complaint-date');
+            var complaint = $('#complaint');
+            var complainant = $('#complainant');
 
 
 
@@ -332,7 +336,9 @@
                             $(data).each(function(index, value){
                                 complaintsTable.append(`<tr>
                                                             <td>${value.student_name}</td>
-                                                            <td>${value.complaint}</td>
+                                                            <td>
+                                                                <button value="${value.id}" class="btn btn-link view-complaint" data-bs-target="#view-specific-complaint-modal" data-bs-toggle="modal">View Complaint</button>
+                                                            </td>
                                                             <td>${value.date}</td>
                                                             <td>${value.status}</td>
                                                             <td>
@@ -353,7 +359,25 @@
                                                         </tr>`)
                                 var acknowledge = complaintsTable.children().eq(index).find('.acknowledge');
                                 var deny = complaintsTable.children().eq(index).find('.deny');
-
+                                var viewComplaint = complaintsTable.children().eq(index).find('.view-complaint');
+                                viewComplaint.on('click', function(){
+                                    complaint.text('');
+                                    complaintDate.text('');
+                                    globalComplaintId = $(this).val();
+                                    $.ajax({
+                                        type: 'POST',
+                                        url: 'php/specificComplaint.php',
+                                        data:{
+                                            complaint_id: globalComplaintId,
+                                        },
+                                        success: function(response){
+                                            var data = JSON.parse(response);
+                                            complainant.text(data.name);
+                                            complaint.text(data.complaint);
+                                            complaintDate.text(data.date);
+                                        }
+                                    })
+                                })
                                 deny.on('click', function(){
                                     var thisstatus = $(this).parent().parent().parent().parent().parent().children().eq(3)
                                     if(thisstatus.text() == 'DENIED'){
@@ -1439,6 +1463,23 @@
                     <button id="confirm-new-word" class="btn btn-success mt-3 w-100 rounded-pill">
                         Confirm
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" data-bs-backdrop="static" id="view-specific-complaint-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                        <p>Complainant: <span class="fw-bold lh-sm" id="complainant"></span><br>
+                        Date: <span class="fw-bold" id="complaint-date"></span></p>
+                    
+                    
+                    <p class="text-center py-5" id="complaint"></p>
                 </div>
             </div>
         </div>
