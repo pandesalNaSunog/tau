@@ -7,11 +7,28 @@ use App\Models\Announcement;
 use Laravel\Sanctum;
 use Laravel\Sanctum\PersonalAccessToken;
 use App\Models\User;
+use App\Models\BadWord;
 class AnnouncementController extends Controller
 {
+
+    public function filterText($text){
+        $filteredWord = "";
+            $wordsArray = explode(" ", $text);
+            foreach($wordsArray as $word){
+                
+                $badWord = BadWord::where('word', $word)->first();
+
+
+                if($badWord){
+                    $filteredWord .= "***** ";
+                }else{
+                    $filteredWord .= $word . " ";
+                }
+            }
+        return $filteredWord;
+    }
     public function getAnnouncements(){
         $announcements = Announcement::orderBy('id', 'desc')->get();
-
         $response = array();
 
         foreach($announcements as $announcementsItem){
@@ -25,7 +42,7 @@ class AnnouncementController extends Controller
             $response[] = [
                 'id' => $id,
                 'title' => $title,
-                'description' => $description,
+                'description' => filterText($description),
                 'created_at' => $createdAt,
                 'updated_at' => $updatedAt,
                 'user_id' => $userId,
@@ -63,7 +80,7 @@ class AnnouncementController extends Controller
         $response = [
             'id' => $announcement->id,
             'title' => $announcement->title,
-            'description' => $announcement->description,
+            'description' => filterText($announcement->description),
             'created_at' => $announcement->created_at->format('M d, Y h:i A'),
             'updated_at' => $announcement->updated_at->format('M d, Y h:i A'),
             'user_id' => $announcement->user_id,

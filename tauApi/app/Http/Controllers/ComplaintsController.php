@@ -10,6 +10,22 @@ use App\Models\User;
 class ComplaintsController extends Controller
 {
     public function getMyComplaints(Request $request){
+        function filterText($text){
+            $filteredWord = "";
+            $wordsArray = explode(" ", $text);
+            foreach($wordsArray as $word){
+                
+                $badWord = BadWord::where('word', $word)->first();
+    
+    
+                if($badWord){
+                    $filteredWord .= "***** ";
+                }else{
+                    $filteredWord .= $word . " ";
+                }
+            }
+            return $filteredWord;
+        }
         $token = PersonalAccessToken::findToken($request->bearerToken());
         $id = $token->tokenable->id;
 
@@ -27,7 +43,7 @@ class ComplaintsController extends Controller
             $response[] = [
                 'id' => $id,
                 'user_id' => $userId,
-                'complaint' => $complaint,
+                'complaint' => filterText($complaint),
                 'status' => $status,
                 'created_at' => $createdAt,
                 'updated_at' => $updatedAt,
@@ -39,6 +55,22 @@ class ComplaintsController extends Controller
     }
 
     public function submitComplaint(Request $request){
+        function filterText($text){
+            $filteredWord = "";
+            $wordsArray = explode(" ", $text);
+            foreach($wordsArray as $word){
+                
+                $badWord = BadWord::where('word', $word)->first();
+    
+    
+                if($badWord){
+                    $filteredWord .= "***** ";
+                }else{
+                    $filteredWord .= $word . " ";
+                }
+            }
+            return $filteredWord;
+        }
 
         $request->validate([
             'complaint' => 'required'
@@ -56,7 +88,7 @@ class ComplaintsController extends Controller
         $response = [
             'id' => $complaint->id,
             'user_id' => $complaint->user_id,
-            'complaint' => $complaint->complaint,
+            'complaint' => filterText($complaint->complaint),
             'status' => $complaint->status,
             'created_at' => $complaint->created_at->format('M d, Y h:i A'),
             'updated_at' => $complaint->updated_at->format('M d, Y h:i A'),

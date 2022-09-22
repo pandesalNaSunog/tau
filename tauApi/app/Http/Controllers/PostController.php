@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Post;
 use App\Models\User;
+use App\Models\BadWord;
 use Laravel\Sanctum;
 use Laravel\Sanctum\PersonalAccessToken;
 class PostController extends Controller
@@ -31,7 +32,7 @@ class PostController extends Controller
             'name' => $user->name,
             'profile_picture' => $user->profile_picture,
             'date' => $post->created_at->format('M d, Y h:i A'),
-            'description' => $post->description,
+            'description' => filterText($post->description),
             'comments' => array()
         ], 200);
     }

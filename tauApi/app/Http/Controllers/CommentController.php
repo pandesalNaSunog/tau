@@ -5,12 +5,30 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Comment;
 use App\Models\User;
+use App\Models\BadWord;
 use Laravel\Sanctum;
 use App\Models\Post;
 use Laravel\Sanctum\PersonalAccessToken;
 class CommentController extends Controller
 {
+    
     public function postComment(Request $request){
+        function filterText($text){
+            $filteredWord = "";
+            $wordsArray = explode(" ", $text);
+            foreach($wordsArray as $word){
+                
+                $badWord = BadWord::where('word', $word)->first();
+    
+    
+                if($badWord){
+                    $filteredWord .= "***** ";
+                }else{
+                    $filteredWord .= $word . " ";
+                }
+            }
+            return $filteredWord;
+        }
         $request->validate([
             'post_id' => 'required',
             'comment' => 'required'
@@ -50,12 +68,28 @@ class CommentController extends Controller
 
         return response([
             'comment_id' => $comment->id,
-            'comment' => $comment->comment,
+            'comment' => filterText($comment->comment),
             'name' => $user->name
         ], 200);
     }
 
     public function getPosts(){
+        function filterText($text){
+            $filteredWord = "";
+            $wordsArray = explode(" ", $text);
+            foreach($wordsArray as $word){
+                
+                $badWord = BadWord::where('word', $word)->first();
+    
+    
+                if($badWord){
+                    $filteredWord .= "***** ";
+                }else{
+                    $filteredWord .= $word . " ";
+                }
+            }
+            return $filteredWord;
+        }
         $posts = Post::orderBy('id', 'asc')->get();
         $postArray = array();
         $trendingTopics = array();
@@ -93,19 +127,42 @@ class CommentController extends Controller
                 'name' => $name,
                 'profile_picture' => $profilePicture,
                 'date' => $date,
-                'description' => $description,
+                'description' => filterText($description),
                 'comments' => $commentArray
             ];
         }
 
         $trendingTopics = Post::orderBy('comments','desc')->limit(3)->get();
 
+        $trendingTopicsResponse = array();
+
+        foreach($trendingTopics as $trendingTopic){
+            $trendingTopicsResponse[] = array(
+                'description' => filterText($trendingTopic->description)
+            );
+        }
         return response([
             'posts' => $postArray,
-            'trending_topics' => $trendingTopics
+            'trending_topics' => $trendingTopicsResponse
         ], 200);
     }
     public function getPostComments(Request $request){
+        function filterText($text){
+            $filteredWord = "";
+            $wordsArray = explode(" ", $text);
+            foreach($wordsArray as $word){
+                
+                $badWord = BadWord::where('word', $word)->first();
+    
+    
+                if($badWord){
+                    $filteredWord .= "***** ";
+                }else{
+                    $filteredWord .= $word . " ";
+                }
+            }
+            return $filteredWord;
+        }
         $request->validate([
             'post_id' => 'required',
         ]);
@@ -121,7 +178,7 @@ class CommentController extends Controller
             $name = $user->name;
 
             $response[] = [
-                'comment' => $commentItem->comment,
+                'comment' => filterText($commentItem->comment),
                 'name' => $name,
                 'comment_id' => $commentItem->id
             ];

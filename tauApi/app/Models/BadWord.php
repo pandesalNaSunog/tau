@@ -8,4 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class BadWord extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'word'
+    ];
 }
