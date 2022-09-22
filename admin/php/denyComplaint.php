@@ -1,10 +1,9 @@
 <?php
     if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'){
-        session_start();
         include('connection.php');
         $con = connect();
 
-        if(isset($_POST) && isset($_SESSION['admin_id'])){
+        if(isset($_POST)){
             $complaintId = $_POST['complaint_id'];
 
 
@@ -14,19 +13,16 @@
 
             $complaintStatus = $complaintRow['status'];
 
-            if($complaintStatus == "ACKNOWLEDGED"){
-                echo 'already acknowledged';
+            if($complaintStatus == "DENIED"){
+                echo 'already denied';
             }else{
-                $query = "UPDATE complaints SET status = 'ACKNOWLEDGED' WHERE id = '$complaintId'";
+                $query = "UPDATE complaints SET status = 'DENIED' WHERE id = '$complaintId'";
                 $con->query($query) or die($con->error);
-    
                 echo 'ok';
             }
             
-        }else{
-            echo 'index.html';
         }
     }else{
-        echo header('HTTP/1.0 403 Forbidden');
+        echo header('HTTP/1.1 403 Forbidden');
     }
 ?>

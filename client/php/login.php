@@ -8,7 +8,7 @@
             $email = htmlspecialchars($_POST['email']);
             $password = htmlspecialchars($_POST['password']);
     
-            $query = "SELECT * FROM users WHERE email = '$email' AND user_type != 'admin'";
+            $query = "SELECT * FROM users WHERE (email = '$email' OR student_teacher_id = '$email') AND user_type != 'admin'";
             $user = $con->query($query) or die($con->error);
             if($row = $user->fetch_assoc()){
                 if(password_verify($password, $row['password'])){

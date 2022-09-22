@@ -393,10 +393,14 @@
                     type: 'GET',
                     url: 'php/getMyComplaints.php',
                     success: function(response){
-                        ;
                         var data = JSON.parse(response);
                         $(data).each(function(index, value){
                             complaintsTable.append(`<tr><td>${value.complaint}</td><td>${value.status}</td><td>${value.date}</td></tr>`);
+                            if(complaintsTable.children().eq(index).children().eq(1).text() == 'DENIED'){
+                                complaintsTable.children().eq(index).children().eq(1).addClass('text-danger fw-bold');
+                            }else if(complaintsTable.children().eq(index).children().eq(1).text() == 'ACKNOWLEDGED'){
+                                complaintsTable.children().eq(index).children().eq(1).addClass('text-success fw-bold');
+                            }
                         })
                     }
                 })
