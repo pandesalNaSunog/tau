@@ -160,7 +160,34 @@
             function addToWordsTable(index, id, word){
                 wordsTable.append(`<tr>
                                         <td>${word}</td>
+                                        <td>
+                                            <button value="${id}" class="delete-word btn btn-outline-success">Delete</button>
+                                        </td>
                                     </tr>`)
+                var deleteWord = wordsTable.children().eq(index).find('.delete-word');
+
+                deleteWord.on('click', function(){
+                    var thisDelete = $(this);
+                    var wordId = $(this).val()
+                    if(confirm('Are you sure? This word will be unfiltered if someone uses it.')){
+                        $.ajax({
+                            type: 'POST',
+                            url: 'php/deleteWord.php',
+                            data:{
+                                word_id: wordId
+                            },
+                            success: function(response){
+                                console.log(response);
+                                if(response == 1){
+                                    thisDelete.parent().parent().remove()
+                                }else{
+                                    alert('This word does not exist anymore.');
+                                    thisDelete.parent().parent().remove()
+                                }
+                            }
+                        })
+                    }
+                })
             }
 
             newAdminEmail.on('keydown', function(){
