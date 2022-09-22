@@ -93,6 +93,9 @@
             var complaintDate = $('#complaint-date');
             var complaint = $('#complaint');
             var complainant = $('#complainant');
+            var numberOfPosts = $('#number-of-posts');
+
+
 
 
 
@@ -105,6 +108,7 @@
                         var data = JSON.parse(response);
                         var users = data.users;
                         numberOfComplaints.text(data.filed_complaints);
+                        numberOfPosts.text(data.posts);
                         new Chart("analytics-chart", {
                             type: "pie",
                             data: {
@@ -1528,6 +1532,9 @@
                         <div class="col col-lg-4 text-center">
                             <p class="fw-bold">Total Number of Filed Complaints</p>
                             <h1 class="fw-bold text-danger" style="font-size:100px" id="number-of-complaints"></h1>
+
+                            <p class="fw-bold mt-4">Total Number of Forum Topics</p>
+                            <h1 class="fw-bold text-success" style="font-size:100px" id="number-of-posts"></h1>
                         </div>
                     </div>
                     
