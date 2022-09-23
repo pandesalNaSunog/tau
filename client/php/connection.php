@@ -8,7 +8,7 @@
 
             $hostname = "localhost";
             $username = "u568496919_tau";
-            $password = "Tauconnect11";
+            $password = "TauPassword11";
             $database = "u568496919_tau_db";
 
             $con = new mysqli($hostname, $username, $password, $database);
