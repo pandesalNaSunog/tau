@@ -11,7 +11,7 @@ use App\Models\BadWord;
 class AnnouncementController extends Controller
 {
 
-    public function filterText($text){
+    function filterText($text){
         $filteredWord = "";
             $wordsArray = explode(" ", $text);
             foreach($wordsArray as $word){
