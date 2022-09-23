@@ -42,7 +42,7 @@
                     $commentUserName = $commentUserRow['name'];
                     $comments[] = array(
                         'name' => $commentUserName,
-                        'comment' => $commentComment
+                        'comment' => filter($commentComment, $con)
                     );
                 }
                 $response[] = array(
