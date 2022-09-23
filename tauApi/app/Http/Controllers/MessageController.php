@@ -98,4 +98,28 @@ class MessageController extends Controller
             'mine' => $mine
         ], 200);
     }
+
+    public function sendNewMessage(Request $request){
+        $request->validate([
+            'message' => 'required',
+            'receiver_id' => 'required'
+        ]);
+
+
+        $token = PersonalAccessToken::findToken($request->bearerToken());
+        $id = $token->tokenable->id;
+
+        $message = Message::create([
+            'sender_id' => $id,
+            'receiver_id' => $request['receiver_id'],
+            'message' => htmlspecialchars($request['message']),
+            'read' => 'no',
+        ]);
+
+        $receiverId = $message->receiver_id;
+
+        $receiver = User::where('id', $receiverId)->first();
+
+        return response($receiver, 200);
+    }
 }
