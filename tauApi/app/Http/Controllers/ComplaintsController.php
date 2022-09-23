@@ -7,6 +7,7 @@ use App\Models\Complaint;
 use Laravel\Sanctum;
 use Laravel\Sanctum\PersonalAccessToken;
 use App\Models\User;
+use App\Models\BadWord;
 class ComplaintsController extends Controller
 {
     public function getMyComplaints(Request $request){
