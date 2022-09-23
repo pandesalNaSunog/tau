@@ -62,7 +62,7 @@ class MessageController extends Controller
             $userId = $user->id;
             $message = Message::where('sender_id', $userId)->where('receiver_id', $id)->orWhere('receiver_id', $userId)->where('sender_id', $id)->first();
 
-            if(!$message){
+            if($message){
                 $usersToMessage[] = $user;
             }
         }
