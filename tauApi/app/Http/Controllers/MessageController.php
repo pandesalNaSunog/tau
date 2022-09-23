@@ -122,4 +122,22 @@ class MessageController extends Controller
 
         return response($receiver, 200);
     }
+
+    public function getUsersToMessage(Request $request){
+        $token = PersonalAccessToken::findToken($request->bearerToken());
+        $id = $token->tokenable->id;
+        $users = User::where('user_type','<>','admin')->where('id','<>',$id)->get();
+        $usersToMessage = array();
+        foreach($users as $user){
+            $userId = $user->id;
+
+            $message = Message::where('sender_id', $userId)->where('receiver_id', $id)->orWhere('receiver_id', $userId)->where('sender_id', $id)->first();
+
+            if(!$message){
+                $usersToMessage[] = $user;
+            }
+        }
+
+        return response($usersToMessage, 200);
+    }
 }
