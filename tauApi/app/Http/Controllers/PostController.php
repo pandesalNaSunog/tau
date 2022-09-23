@@ -11,6 +11,22 @@ use Laravel\Sanctum\PersonalAccessToken;
 class PostController extends Controller
 {
     public function writePost(Request $request){
+        function filterText($text){
+            $filteredWord = "";
+                $wordsArray = explode(" ", $text);
+                foreach($wordsArray as $word){
+                    
+                    $badWord = BadWord::where('word', $word)->first();
+    
+    
+                    if($badWord){
+                        $filteredWord .= "***** ";
+                    }else{
+                        $filteredWord .= $word . " ";
+                    }
+                }
+            return $filteredWord;
+        }
         $request->validate([
             'description' => 'required',
         ]);
