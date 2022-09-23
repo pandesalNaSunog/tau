@@ -8,8 +8,9 @@
         $today = getCurrentDate();
         if(isset($_POST) && isset($_SESSION['user_id'])){
             $userId = $_SESSION['user_id'];
+            $category = htmlspecialchars($_POST['complain_to']);
             $complain = htmlspecialchars($_POST['complain']);
-            $query = "INSERT INTO complaints(`status`,`user_id`,`complaint`,`created_at`,`updated_at`)VALUES('PENDING','$userId','$complain','$today','$today')";
+            $query = "INSERT INTO complaints(`category`,`status`,`user_id`,`complaint`,`created_at`,`updated_at`)VALUES('$category','PENDING','$userId','$complain','$today','$today')";
             $con->query($query) or die($con->error);
     
             $query = "SELECT * FROM complaints WHERE id = LAST_INSERT_ID()";

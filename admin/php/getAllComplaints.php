@@ -25,6 +25,7 @@
                     'id' => $row['id'],
                     'student_name' => $studentName,
                     'complaint' => filter($thisComplaint, $con),
+                    'category' => $row['category'],
                     'date' => $date,
                     'status' => $status
                 );

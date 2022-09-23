@@ -16,6 +16,7 @@
                 $complaints[] = array(
                     'complaint' => filter($row['complaint'], $con),
                     'status' => $row['status'],
+                    'category' => $row['category'],
                     'date' => $date
                 );
             }

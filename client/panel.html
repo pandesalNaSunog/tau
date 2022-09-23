@@ -61,6 +61,8 @@
             var usersToMessage = $('#users-to-message');
             var newMessage = $('#new-message');
             var sendNewMessage = $('#send-new-message');
+            var complaintTo = $("#complaint-to");
+            var complaintToError = $('#complaint-to-error');
 
 
             newMessage.on('keydown', function(){
@@ -231,11 +233,17 @@
                 if(complain.val() == ""){
                     $('#complain-feedback').text('Please fill out this field.');
                     complain.addClass('is-invalid');
+                }else if(complaintTo.val() == ""){
+                    complaintTo.addClass('is-invalid');
+                    complaintToError.text('Please fill out this field');
                 }else{
                     complain.removeClass('is-invalid');
-                    submitComplainFunc(complain);
-                    complain.val('');
+                    submitComplainFunc(complain, complaintTo);
+                    
                 }
+            })
+            complaintTo.on('keydown', function(){
+                complaintTo.removeClass('is-invalid');
             })
 
             messageText.on('keydown', function(){
@@ -266,18 +274,21 @@
                 })
             }
 
-            function submitComplainFunc(complain){
+            function submitComplainFunc(complain, to){
                 $.ajax({
                     type: 'POST',
                     url: 'php/submitComplain.php',
                     data:{
-                        complain: complain.val()
+                        complain: complain.val(),
+                        complain_to: to.val()
                     },
                     success: function(response){
                         if(response != 'index.html'){
+                            complain.val('');
+                            complaintTo.val('');
                             var data = JSON.parse(response);
                             alert('Complaint has been sent to the Administrator.')
-                            complaintsTable.append(`<tr><td>${data.complaint}</td><td>${data.status}</td><td>${data.date}</td></tr>`);
+                            complaintsTable.append(`<tr><td>${data.complaint}</td><td>${value.category}</td><td>${data.status}</td><td>${data.date}</td></tr>`);
                         }else{
                             window.location.replace(response);
                         }
@@ -450,7 +461,7 @@
                     success: function(response){
                         var data = JSON.parse(response);
                         $(data).each(function(index, value){
-                            complaintsTable.append(`<tr><td>${value.complaint}</td><td>${value.status}</td><td>${value.date}</td></tr>`);
+                            complaintsTable.append(`<tr><td>${value.complaint}</td><td>${value.category}</td><td>${value.status}</td><td>${value.date}</td></tr>`);
                             if(complaintsTable.children().eq(index).children().eq(1).text() == 'DENIED'){
                                 complaintsTable.children().eq(index).children().eq(1).addClass('text-danger fw-bold');
                             }else if(complaintsTable.children().eq(index).children().eq(1).text() == 'ACKNOWLEDGED'){
@@ -924,7 +935,14 @@
                         </h4>
                     </div>
                     <div class="card-body">
-                        <textarea id="complain" class="form-control" placeholder="Write your complain here..."></textarea>
+                        <div class="input-group">
+                            <span class="input-group-text">To:</span>
+                            <input id="complaint-to" type="text" class="form-control">
+                            <div id="complaint-to-error" class="invalid-feedback">
+
+                            </div>
+                        </div>
+                        <textarea id="complain" class="form-control mt-3" placeholder="Write your complain here..."></textarea>
                         <div class="invalid-feedback" id="complain-feedback">
     
                         </div>
@@ -941,6 +959,7 @@
                             <table class="table table-striped">
                                 <thead>
                                     <th scope="col">Complaint</th>
+                                    <th scope="col">Category</th>
                                     <th scope="col">Status</th>
                                     <th scope="col">Date</th>
                                 </thead>

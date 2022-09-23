@@ -367,6 +367,7 @@
                             $(data).each(function(index, value){
                                 complaintsTable.append(`<tr>
                                                             <td>${value.student_name}</td>
+                                                            <td>${value.category}</td>
                                                             <td>
                                                                 <button value="${value.id}" class="btn btn-link view-complaint" data-bs-target="#view-specific-complaint-modal" data-bs-toggle="modal">View Complaint</button>
                                                             </td>
@@ -1391,7 +1392,7 @@
 
     <section id="complaints-section">
         <div class="container">
-            <div class="card shadow mt-5 mx-auto col-md-6">
+            <div class="card shadow mt-5 mx-auto col-md-10">
                 <div class="card-header">
                     <h3 class="fw-bold">
                         Student Complaints
@@ -1402,6 +1403,7 @@
                         <table class="table table-striped">
                             <thead>
                                 <th scope="col">Student Name</th>
+                                <th scope="col">Category</th>
                                 <th scope="col">Complaint</th>
                                 <th scope="col">Date Submitted</th>
                                 <th scope="col">Status</th>
