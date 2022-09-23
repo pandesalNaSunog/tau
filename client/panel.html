@@ -457,15 +457,15 @@
 
                 $.ajax({
                     type: 'GET',
-                    url: 'php/getMyComplaints.php',
+                    url: 'php/2mplaints.php',
                     success: function(response){
                         var data = JSON.parse(response);
                         $(data).each(function(index, value){
                             complaintsTable.append(`<tr><td>${value.complaint}</td><td>${value.category}</td><td>${value.status}</td><td>${value.date}</td></tr>`);
-                            if(complaintsTable.children().eq(index).children().eq(1).text() == 'DENIED'){
-                                complaintsTable.children().eq(index).children().eq(1).addClass('text-danger fw-bold');
-                            }else if(complaintsTable.children().eq(index).children().eq(1).text() == 'ACKNOWLEDGED'){
-                                complaintsTable.children().eq(index).children().eq(1).addClass('text-success fw-bold');
+                            if(complaintsTable.children().eq(index).children().eq(2).text() == 'DENIED'){
+                                complaintsTable.children().eq(index).children().eq(2).addClass('text-danger fw-bold');
+                            }else if(complaintsTable.children().eq(index).children().eq(2).text() == 'ACKNOWLEDGED'){
+                                complaintsTable.children().eq(index).children().eq(2).addClass('text-success fw-bold');
                             }
                         })
                     }
