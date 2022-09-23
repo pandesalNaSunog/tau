@@ -7,6 +7,7 @@ use Laravel\Sanctum;
 use Laravel\Sanctum\PersonalAccessToken;
 use App\Models\Message;
 use App\Models\User;
+use App\Models\Notification;
 class MessageController extends Controller
 {
     //
@@ -79,12 +80,21 @@ class MessageController extends Controller
 
         $token = PersonalAccessToken::findToken($request->bearerToken());
         $id = $token->tokenable->id;
-
+        $sender = User::where('id', $id)->first();
+        $senderName = $sender->name;
         $message = Message::create([
             'sender_id' => $id,
             'receiver_id' => $request['receiver_id'],
             'message' => htmlspecialchars($request['message']),
             'read' => 'no',
+        ]);
+        
+        $notificationMessage = $senderName . "sent you a message.";
+        $notification = Notification::create([
+            'title' => 'New Message',
+            'message' => $notificationMessage,
+            'user_id' => $request['receiver_id'],
+            'read' => 'no'
         ]);
 
         $mine = true;
@@ -108,6 +118,17 @@ class MessageController extends Controller
 
         $token = PersonalAccessToken::findToken($request->bearerToken());
         $id = $token->tokenable->id;
+
+        $sender = User::where('id', $id)->first();
+        $senderName = $sender->name;
+        
+        $notificationMessage = $senderName . "sent you a message.";
+        $notification = Notification::create([
+            'title' => 'New Message',
+            'message' => $notificationMessage,
+            'user_id' => $request['receiver_id'],
+            'read' => 'no'
+        ]);
 
         $message = Message::create([
             'sender_id' => $id,
