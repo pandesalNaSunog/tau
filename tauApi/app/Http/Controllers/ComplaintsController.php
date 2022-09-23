@@ -76,7 +76,8 @@ class ComplaintsController extends Controller
         }
 
         $request->validate([
-            'complaint' => 'required'
+            'complaint' => 'required',
+            'category' => 'required'
         ]);
 
         $token = PersonalAccessToken::findToken($request->bearerToken());
@@ -85,13 +86,15 @@ class ComplaintsController extends Controller
         $complaint = Complaint::create([
             'user_id' => $id,
             'complaint' => htmlspecialchars($request['complaint']),
-            'status' => 'PENDING'
+            'status' => 'PENDING',
+            'category' => $request['category']
         ]);
 
         $response = [
             'id' => $complaint->id,
             'user_id' => $complaint->user_id,
             'complaint' => filterText($complaint->complaint),
+            'category' => $complaint->category,
             'status' => $complaint->status,
             'created_at' => $complaint->created_at->format('M d, Y h:i A'),
             'updated_at' => $complaint->updated_at->format('M d, Y h:i A'),
