@@ -457,7 +457,7 @@
 
                 $.ajax({
                     type: 'GET',
-                    url: 'php/2mplaints.php',
+                    url: 'php/getMyComplaints.php',
                     success: function(response){
                         var data = JSON.parse(response);
                         $(data).each(function(index, value){
