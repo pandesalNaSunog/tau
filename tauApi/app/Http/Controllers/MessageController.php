@@ -57,8 +57,17 @@ class MessageController extends Controller
         $id = $token->tokenable->id;
 
         $users = User::where('id','<>',$id)->where('user_type','<>','admin')->get();
+        $usersToMessage = array();
+        foreach($users as $user){
+            $userId = $user->id;
+            $message = Message::where('sender_id', $userId)->where('receiver_id', $id)->orWhere('receiver_id', $userId)->where('sender_id', $id)->first();
 
-        return response($users, 200);
+            if(!$message){
+                $usersToMessage[] = $user;
+            }
+        }
+
+        return response($usersToMessage, 200);
     }
 
     public function sendMessage(Request $request){
