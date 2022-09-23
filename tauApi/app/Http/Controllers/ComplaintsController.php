@@ -38,12 +38,14 @@ class ComplaintsController extends Controller
             $createdAt = $complaintItem->created_at->format('M d, Y h:i A');
             $updatedAt = $complaintItem->updated_at->format('M d, Y h:i A');
             $status = $complaintItem->status;
+            $category = $complaintItem->category;
             $user = User::where('id', $userId)->first();
 
             $response[] = [
                 'id' => $id,
                 'user_id' => $userId,
                 'complaint' => filterText($complaint),
+                'category' => $category,
                 'status' => $status,
                 'created_at' => $createdAt,
                 'updated_at' => $updatedAt,
