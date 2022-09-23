@@ -89,7 +89,7 @@ class MessageController extends Controller
             'read' => 'no',
         ]);
         
-        $notificationMessage = $senderName . "sent you a message.";
+        $notificationMessage = $senderName . " sent you a message.";
         $notification = Notification::create([
             'title' => 'New Message',
             'message' => $notificationMessage,
@@ -121,8 +121,8 @@ class MessageController extends Controller
 
         $sender = User::where('id', $id)->first();
         $senderName = $sender->name;
-        
-        $notificationMessage = $senderName . "sent you a message.";
+
+        $notificationMessage = $senderName . " sent you a message.";
         $notification = Notification::create([
             'title' => 'New Message',
             'message' => $notificationMessage,
